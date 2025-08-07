@@ -1,0 +1,134 @@
+.register-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.register-wrapper {
+  width: 100%;
+  max-width: 600px;
+}
+
+.register-card {
+  border: none;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.register-card .card-body {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  margin: 2px;
+  color: #333;
+}
+
+.register-icon {
+  font-size: 3rem;
+  color: #667eea;
+}
+
+.register-title {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.form-control {
+  border-radius: 10px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+  transform: none;
+  box-shadow: none;
+}
+
+.login-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.login-link:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dark theme adjustments */
+.dark-theme .register-card .card-body {
+  background: rgba(52, 58, 64, 0.95);
+  color: #f8f9fa;
+}
+
+.dark-theme .register-title {
+  color: #f8f9fa;
+}
+
+.dark-theme .form-control {
+  background-color: #495057;
+  border-color: #6c757d;
+  color: #f8f9fa;
+}
+
+.dark-theme .form-control:focus {
+  background-color: #495057;
+  color: #f8f9fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .register-wrapper {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  
+  .register-card .card-body {
+    padding: 2rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .register-container {
+    padding: 1rem;
+  }
+  
+  .register-card .card-body {
+    padding: 1.5rem !important;
+  }
+} 

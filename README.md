@@ -1,52 +1,73 @@
 # Student Accommodation Portal
 
-## Overview
+## Giới thiệu
 
-This is a full-stack web application designed to help students find suitable accommodation and landlords to list their properties. The platform aims to streamline the process of connecting students with available housing options, featuring user authentication, accommodation listing management, and a user-friendly interface.
+Student Accommodation Portal là hệ thống quản lý, tìm kiếm, đánh giá và giao dịch nhà trọ/phòng trọ dành cho sinh viên. Dự án hỗ trợ đầy đủ các chức năng cho người dùng, chủ nhà, quản trị viên với giao diện hiện đại, dễ sử dụng và khả năng mở rộng mạnh mẽ.
 
-## Tech Stack
+## Tính năng chính
+- Đăng ký, đăng nhập, xác thực 2 lớp
+- Tìm kiếm, lọc, xem chi tiết nhà trọ/phòng trọ
+- Đánh giá, bình luận, yêu thích phòng trọ
+- Quản lý hợp đồng thuê, thanh toán, lịch sử giao dịch
+- Quản lý sự kiện, thông báo, bảo trì
+- Quản lý CMS tin tức, trang tĩnh, FAQ
+- Gợi ý thông minh dựa trên hành vi người dùng
+- Quản lý vai trò, phân quyền, nhật ký hoạt động
+- Dashboard thống kê, báo cáo doanh thu, hoạt động
 
-### Frontend
-- **ReactJS**: A JavaScript library for building user interfaces.
-- **Bootstrap**: A popular front-end framework for developing responsive, mobile-first projects on the web.
-
-### Backend
-- **Node.js**: A JavaScript runtime built on Chrome's V8 JavaScript engine.
-- **Express**: A fast, unopinionated, minimalist web framework for Node.js.
-- **Sequelize**: A promise-based Node.js ORM for MySQL.
-- **MySQL**: A relational database management system.
-- **JWT (JSON Web Tokens)**: For secure user authentication.
-- **bcryptjs**: For password hashing.
-
-## Setup and Installation
-
-For detailed instructions on how to set up and run the project locally, please refer to the [Setup Instructions](docs/Setup_Instructions.md) in the `docs` folder.
-
-## API Documentation
-
-For comprehensive documentation on the backend API endpoints, please refer to the [API Documentation](docs/API_Documentation.md) in the `docs` folder.
-
-## Project Structure
-
+## Cấu trúc dự án
 ```
 student-accommodation-portal/
-├── client/               # ReactJS frontend application
-│   ├── public/           # Static assets
-│   ├── src/              # React source code
-│   │   ├── components/   # Reusable React components
-│   │   ├── pages/        # React pages/views
-│   │   └── services/     # API service calls
-│   └── .env.example
-├── server/               # Node.js Express backend API
-│   ├── config/           # Database configuration
-│   ├── controllers/      # Business logic for routes
-│   ├── models/           # Sequelize models (database schemas)
-│   ├── routes/           # API routes
-│   └── middleware/       # JWT authentication middleware
-│   └── .env.example
-├── docs/                 # Project documentation
-│   ├── API_Documentation.md
-│   ├── Setup_Instructions.md
-│   └── README.md
-└── README.md             # Root project README
-``` 
+  backend/      # Source code backend Node.js (Express, Sequelize)
+  frontend/     # Source code frontend React (SPA)
+  README.md     # Hướng dẫn tổng hợp
+```
+
+## Hướng dẫn cài đặt & chạy dự án
+
+### 1. Cài đặt môi trường
+- Node.js >= 18
+- PostgreSQL >= 13 hoặc MySQL >= 8
+- (Tùy chọn) Redis cho cache, rate limit
+
+### 2. Cài đặt backend
+```bash
+cd backend
+npm install
+# Cấu hình database trong config/config.json
+npx sequelize-cli db:migrate
+npm start
+```
+
+### 3. Cài đặt frontend
+```bash
+cd frontend
+npm install
+npm start
+```
+
+### 4. Truy cập hệ thống
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5000
+
+## Hướng dẫn cấu hình
+- Sửa file `backend/config/config.json` để cấu hình database, JWT, email, cloudinary, ...
+- Sửa file `.env` (nếu có) cho các biến môi trường nhạy cảm
+- Đổi port, domain, cấu hình production theo nhu cầu
+
+## Hướng dẫn triển khai production
+- Build frontend: `npm run build` trong thư mục frontend
+- Sử dụng PM2 hoặc Docker để chạy backend ổn định
+- Cấu hình reverse proxy (Nginx/Apache) để trỏ domain về frontend và backend
+- Đảm bảo bảo mật JWT, HTTPS, backup database định kỳ
+
+## Đóng góp & mở rộng
+- Fork, tạo branch mới, pull request để đóng góp code
+- Mọi ý kiến, bug, đề xuất vui lòng tạo issue trên GitHub
+
+## Liên hệ
+- Email: admin@yourdomain.com
+- Facebook: fb.com/yourpage
+
+---
+**© 2024 Student Accommodation Portal. All rights reserved.** 

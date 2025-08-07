@@ -1,0 +1,71 @@
+.accommodation-list-page {
+  height: calc(100vh - 70px); /* Adjust based on your header height */
+  overflow: hidden;
+}
+
+.accommodation-list-col, .map-col {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.filters-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.filters-card .accordion-header button {
+  font-weight: 600;
+}
+
+.amenities-filter-list {
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  background-color: #f8f9fa;
+}
+
+.accommodation-list-scroll {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 15px; /* For scrollbar */
+  margin-right: -15px;
+}
+
+/* Custom scrollbar for webkit browsers */
+.accommodation-list-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.accommodation-list-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.accommodation-list-scroll::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.accommodation-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.map-col {
+  height: calc(100vh - 70px); /* Full height */
+  position: sticky;
+  top: 70px; /* Stick below the header */
+}
+
+/* Ensure the map inside MapView component takes full height */
+.map-container {
+    width: 100%;
+    height: 100%;
+}
+
+.map-container-sticky {
+  height: 100%;
+  width: 100%;
+} 

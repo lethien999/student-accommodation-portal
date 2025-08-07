@@ -1,0 +1,50 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: '**/package-lock.json'
+
+    - name: Install Backend Dependencies
+      run: npm install
+      working-directory: ./backend
+
+    - name: Run Backend Tests
+      run: npm test
+      working-directory: ./backend
+      env:
+        CI: true
+        JWT_SECRET: ${{ secrets.JWT_SECRET_TEST }}
+        DB_USER: ${{ secrets.DB_USER_TEST }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD_TEST }}
+        DB_NAME: ${{ secrets.DB_NAME_TEST }}
+        DB_HOST: '127.0.0.1'
+
+    - name: Install Frontend Dependencies
+      run: npm install
+      working-directory: ./frontend
+
+    - name: Run Frontend Tests
+      run: npm test
+      working-directory: ./frontend
+      env:
+        CI: true 

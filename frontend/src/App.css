@@ -1,0 +1,43 @@
+/* Light Theme */
+.light-theme {
+  --bs-body-bg: #fff;
+  --bs-body-color: #212529;
+}
+
+/* Dark Theme */
+.dark-theme {
+  --bs-body-bg: #212529;
+  --bs-body-color: #f8f9fa;
+}
+
+/* General body styles to apply theme */
+body {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Ensure components inherit the theme colors */
+.dark-theme .card,
+.dark-theme .list-group-item,
+.dark-theme .modal-content {
+    background-color: #343a40;
+    color: #f8f9fa;
+}
+
+.dark-theme .form-control {
+    background-color: #495057;
+    color: #f8f9fa;
+    border-color: #6c757d;
+}
+
+.dark-theme .form-control:focus {
+    background-color: #495057;
+    color: #f8f9fa;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.dark-theme .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+} 

@@ -1,0 +1,42 @@
+module.exports = {
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.createTable('StaticPages', {
+      id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+        allowNull: false,
+      },
+      title: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      slug: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      content: {
+        type: Sequelize.TEXT,
+        allowNull: false,
+      },
+      status: {
+        type: Sequelize.ENUM('published', 'draft'),
+        defaultValue: 'draft',
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      },
+    });
+  },
+  down: async (queryInterface) => {
+    await queryInterface.dropTable('StaticPages');
+  },
+}; 
