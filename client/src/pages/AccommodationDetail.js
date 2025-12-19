@@ -20,7 +20,7 @@ const AccommodationDetail = () => {
         
         // Check if current user is the owner
         const user = authService.getCurrentUser();
-        setIsOwner(user?.id === data.userId);
+        setIsOwner(user?.id === data.ownerId);
       } catch (err) {
         setError(err.message || 'Failed to fetch accommodation');
       } finally {
