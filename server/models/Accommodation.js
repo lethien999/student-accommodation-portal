@@ -50,6 +50,20 @@ const Accommodation = sequelize.define('Accommodation', {
       model: User,
       key: 'id'
     }
+  },
+  amenities: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: []
+  },
+  rules: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  status: {
+    type: DataTypes.ENUM('available', 'unavailable', 'pending'),
+    defaultValue: 'available',
+    allowNull: false
   }
 }, {
   timestamps: true,
