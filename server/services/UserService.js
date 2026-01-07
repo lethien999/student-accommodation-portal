@@ -1,132 +1,129 @@
-const { Op } = require('sequelize');
-const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Role = require('../models/Role'); // Import Role
 const AppError = require('../utils/AppError');
+const jwt = require('jsonwebtoken');
 
-/**
- * UserService - Xử lý logic liên quan đến User
- * Tuân thủ SRP: Chỉ chứa business logic của User
- * Tuân thủ DIP: Inject dependencies (User model)
- */
 class UserService {
-    constructor(userModel) {
-        this.userModel = userModel;
+    constructor() {
+        this.User = User;
+        this.Role = Role; // DIish
     }
 
-    // Helper: Generate JWT Token
-    _generateToken(id) {
-        return jwt.sign({ id }, process.env.JWT_SECRET || 'your-secret-key-change-in-production', {
-            expiresIn: process.env.JWT_EXPIRE || '30d'
+    // Generate JWT
+    _signToken(id) {
+        return jwt.sign({ id }, process.env.JWT_SECRET, {
+            expiresIn: '30d'
         });
     }
 
-    /**
-     * Đăng ký user mới
-     * @param {Object} userData 
-     */
     async register(userData) {
-        // Check duplicates
-        const existingUser = await this.userModel.findOne({
-            where: {
-                [Op.or]: [
-                    { email: userData.email },
-                    { username: userData.username }
-                ]
-            }
+        const { username, email, password, role } = userData;
+
+        // Check if user exists
+        const userExists = await this.User.findOne({
+            where: sequelize.or({ email }, { username })
         });
 
-        if (existingUser) {
-            if (existingUser.email === userData.email) {
-                throw AppError.conflict('Email này đã được sử dụng');
-            }
-            throw AppError.conflict('Tên đăng nhập này đã được sử dụng');
+        if (userExists) {
+            throw AppError.badRequest('User already exists');
         }
 
-        // Create user
-        const user = await this.userModel.create(userData);
-        const token = this._generateToken(user.id);
+        // Assign Role
+        let roleId;
+        const roleName = role || 'user'; // Default to user
+        const roleRecord = await this.Role.findOne({ where: { name: roleName } });
 
-        return { user, token };
+        if (roleRecord) {
+            roleId = roleRecord.id;
+        } else {
+            // Should we create it? Better to throw error or default to user.
+            // For now, if 'landlord' requested but not in DB, fallback to 'user'?
+            // Or throw error.
+            // Let's create default roles if missing (Self-healing? No, seeding is better)
+            // Throw error if valid role not found.
+            const defaultRole = await this.Role.findOne({ where: { name: 'user' } });
+            if (defaultRole) roleId = defaultRole.id;
+            // If even 'user' role missing, it will be null -> Error later.
+        }
+
+        const user = await this.User.create({
+            username,
+            email,
+            password,
+            roleId, // Use roleId
+            fullName: userData.fullName,
+            phone: userData.phone
+        });
+
+        // Valid only if roleId is set.
+
+        // Return user with token
+        const token = this._signToken(user.id);
+
+        // Reload to get Role name for frontend
+        const userWithRole = await this.User.findByPk(user.id, { include: this.Role });
+
+        return { user: userWithRole, token };
     }
 
-    /**
-     * Đăng nhập
-     * @param {String} email 
-     * @param {String} password 
-     */
     async login(email, password) {
-        // Check email
-        const user = await this.userModel.findOne({ where: { email } });
-        if (!user) {
-            throw AppError.unauthorized('Email hoặc mật khẩu không đúng');
+        const user = await this.User.findOne({
+            where: { email },
+            include: this.Role
+        });
+
+        if (!user || !(await user.comparePassword(password))) {
+            throw AppError.unauthorized('Invalid credentials');
         }
 
-        // Check password
-        const isMatch = await user.comparePassword(password);
-        if (!isMatch) {
-            throw AppError.unauthorized('Email hoặc mật khẩu không đúng');
-        }
+        const token = this._signToken(user.id);
 
-        const token = this._generateToken(user.id);
         return { user, token };
     }
 
-    /**
-     * Lấy profile user theo ID
-     * @param {Number} userId 
-     */
     async getProfile(userId) {
-        const user = await this.userModel.findByPk(userId);
+        const user = await this.User.findByPk(userId, {
+            include: this.Role,
+            attributes: { exclude: ['password'] }
+        });
+
         if (!user) {
-            throw AppError.notFound('Không tìm thấy người dùng');
+            throw AppError.notFound('User not found');
         }
+
         return user;
     }
 
-    /**
-     * Cập nhật thông tin user
-     * @param {Number} userId 
-     * @param {Object} updateData 
-     */
     async updateProfile(userId, updateData) {
-        const user = await this.userModel.findByPk(userId);
+        const user = await this.User.findByPk(userId);
+
         if (!user) {
-            throw AppError.notFound('Không tìm thấy người dùng');
+            throw AppError.notFound('User not found');
         }
 
-        // Prevent password update via this method
-        if (updateData.password) {
-            delete updateData.password;
-        }
+        // Avoid updating sensitive fields like password/role via this method
+        // Remove role/roleId/password from updateData
+        const { password, role, roleId, ...filteredData } = updateData;
 
-        await user.update(updateData);
-        return user;
+        await user.update(filteredData);
+
+        // Reload with Role
+        return await this.User.findByPk(userId, { include: this.Role });
     }
 
-    /**
-     * Đổi mật khẩu
-     * @param {Number} userId 
-     * @param {String} currentPassword 
-     * @param {String} newPassword 
-     */
     async changePassword(userId, currentPassword, newPassword) {
-        const user = await this.userModel.findByPk(userId);
-        if (!user) {
-            throw AppError.notFound('Không tìm thấy người dùng');
-        }
+        const user = await this.User.findByPk(userId);
 
-        const isMatch = await user.comparePassword(currentPassword);
-        if (!isMatch) {
-            throw AppError.badRequest('Mật khẩu hiện tại không đúng');
+        if (!(await user.comparePassword(currentPassword))) {
+            throw AppError.badRequest('Invalid current password');
         }
 
         user.password = newPassword;
-        await user.save(); // Hook will hash password
+        await user.save();
 
-        // Optional: Return new token if needed, or just success
-        return { message: 'Đổi mật khẩu thành công' };
+        return { message: 'Password updated successfully' };
     }
 }
 
-// Export singleton instance with dependency injected
-module.exports = new UserService(User);
+const sequelize = require('../config/database'); // Needed for Op/Or check in register
+module.exports = new UserService();

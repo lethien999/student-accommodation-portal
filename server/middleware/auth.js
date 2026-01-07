@@ -1,61 +1,67 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Role = require('../models/Role'); // Import Role
 const AppError = require('../utils/AppError');
+const catchAsync = require('../utils/catchAsync');
 
-// Protect routes - verify JWT token
-const protect = async (req, res, next) => {
+const protect = catchAsync(async (req, res, next) => {
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return next(AppError.unauthorized('Not authorized to access this route'));
+  }
+
   try {
-    let token;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Check for token in Authorization header
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      token = req.headers.authorization.split(' ')[1];
+    // Include Role model
+    req.user = await User.findByPk(decoded.id, {
+      include: Role
+    });
+
+    if (!req.user) {
+      return next(AppError.unauthorized('User not found'));
     }
 
-    if (!token) {
-      return next(AppError.unauthorized('Not authorized, no token'));
-    }
+    // Temporary fix for migration: if roleId is null, try to use old way or just fail safe
+    // Ideally user MUST have a role.
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production');
-
-    // Get user from token
-    const user = await User.findByPk(decoded.id);
-
-    if (!user) {
-      return next(AppError.unauthorized('User not found with this token'));
-    }
-
-    req.user = user;
     next();
-  } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return next(AppError.unauthorized('Invalid token'));
-    }
-    if (error.name === 'TokenExpiredError') {
-      return next(AppError.unauthorized('Token expired'));
-    }
-    next(error);
+  } catch (err) {
+    return next(AppError.unauthorized('Not authorized to access this route'));
   }
+});
+
+// Grant access to specific roles
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    // Check if user has Role loaded
+    const userRole = req.user.Role ? req.user.Role.name : null;
+
+    if (!userRole || !roles.includes(userRole)) {
+      return next(
+        AppError.forbidden(`User role ${userRole || 'none'} is not authorized to access this route`)
+      );
+    }
+    next();
+  };
 };
 
-// Optional: Admin only middleware
-const admin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
-    next();
-  } else {
-    next(AppError.forbidden('Access denied. Admin only.'));
-  }
+const admin = authorize('admin');
+const landlord = authorize('landlord', 'admin');
+const landlordOrAdmin = authorize('landlord', 'admin');
+
+module.exports = {
+  protect,
+  authorize, // Export generic authorize
+  admin,
+  landlord,
+  landlordOrAdmin
 };
-
-// Optional: Landlord or Admin middleware
-const landlordOrAdmin = (req, res, next) => {
-  if (req.user && (req.user.role === 'landlord' || req.user.role === 'admin')) {
-    next();
-  } else {
-    next(AppError.forbidden('Access denied. Landlord or Admin only.'));
-  }
-};
-
-module.exports = { protect, admin, landlordOrAdmin };
-

@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const bcrypt = require('bcryptjs');
+const Role = require('./Role');
 
 const User = sequelize.define('User', {
   id: {
@@ -34,10 +35,13 @@ const User = sequelize.define('User', {
       notEmpty: true
     }
   },
-  role: {
-    type: DataTypes.ENUM('user', 'landlord', 'admin'),
-    defaultValue: 'user',
-    allowNull: false
+  roleId: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Role,
+      key: 'id'
+    },
+    allowNull: true // Allow null initially for migration
   },
   phone: {
     type: DataTypes.STRING,
@@ -59,8 +63,6 @@ const User = sequelize.define('User', {
   }
 }, {
   timestamps: true,
-  createdAt: true,
-  updatedAt: true,
   hooks: {
     beforeCreate: async (user) => {
       if (user.password) {
@@ -77,17 +79,25 @@ const User = sequelize.define('User', {
   }
 });
 
+// Associations
+Role.hasMany(User, { foreignKey: 'roleId' });
+User.belongsTo(Role, { foreignKey: 'roleId' });
+
 // Instance method to compare password
-User.prototype.comparePassword = async function(candidatePassword) {
+User.prototype.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
 // Instance method to return user without password
-User.prototype.toJSON = function() {
+User.prototype.toJSON = function () {
   const values = Object.assign({}, this.get());
   delete values.password;
+  // Flattern role name for frontend compatibility if populated
+  if (values.Role) {
+    values.role = values.Role.name;
+    // delete values.Role; // Keep it or remove? Maybe keep for detailed info
+  }
   return values;
 };
 
 module.exports = User;
-

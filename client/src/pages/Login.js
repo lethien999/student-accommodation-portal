@@ -35,7 +35,20 @@ const Login = () => {
     const result = await login(formData.email, formData.password);
 
     if (result.success) {
-      navigate(from, { replace: true });
+      if (location.state?.from?.pathname) {
+        navigate(location.state.from.pathname, { replace: true });
+        return;
+      }
+
+      // Role-based redirect
+      const user = result.data?.user;
+      const role = user?.role;
+
+      if (role === 'admin') navigate('/admin', { replace: true });
+      else if (role === 'landlord') navigate('/landlord', { replace: true });
+      else if (role === 'sale') navigate('/sale', { replace: true });
+      else if (role === 'user') navigate('/dashboard', { replace: true });
+      else navigate('/', { replace: true });
     } else {
       setError(result.error || 'Đăng nhập thất bại. Vui lòng thử lại.');
     }

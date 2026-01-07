@@ -64,6 +64,11 @@ const Accommodation = sequelize.define('Accommodation', {
     type: DataTypes.ENUM('available', 'unavailable', 'pending'),
     defaultValue: 'available',
     allowNull: false
+  },
+  views: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    allowNull: false
   }
 }, {
   timestamps: true,

@@ -11,10 +11,13 @@ const accommodationRoutes = require('./routes/accommodationRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+
+const dashboardRoutes = require('./routes/dashboardRoutes');
 const { apiLimiter } = require('./middleware/rateLimiter');
 const { createLogger, logger } = require('./utils/logger');
 const AppError = require('./utils/AppError');
 const errorHandler = require('./middleware/errorHandler');
+const { seedRoles } = require('./utils/seeders');
 
 const app = express();
 
@@ -47,7 +50,9 @@ app.use('/api/health', healthRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/accommodations', accommodationRoutes);
 app.use('/api/reviews', reviewRoutes);
+
 app.use('/api/upload', uploadRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
@@ -69,8 +74,11 @@ const startServer = async () => {
     logger.info('Database connection has been established successfully.');
 
     // Sync all models
-    await sequelize.sync();
+    await sequelize.sync({ alter: true }); // Use alter: true to update schema
     logger.info('All models were synchronized successfully.');
+
+    // Seed roles
+    await seedRoles();
 
     app.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`, {

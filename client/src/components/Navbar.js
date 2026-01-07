@@ -54,10 +54,15 @@ const Navbar = () => {
                   Đăng tin
                 </Link>
                 <Link
-                  to="/profile"
-                  className="text-gray-700 hover:text-indigo-600 transition duration-200"
+                  to={
+                    user?.role === 'admin' ? '/admin' :
+                      user?.role === 'landlord' ? '/landlord' :
+                        user?.role === 'sale' ? '/sale' :
+                          '/profile'
+                  }
+                  className="text-gray-700 hover:text-indigo-600 transition duration-200 font-medium"
                 >
-                  {user?.username || 'Profile'}
+                  {user?.username || 'Tài khoản'}
                 </Link>
                 <button
                   onClick={handleLogout}
