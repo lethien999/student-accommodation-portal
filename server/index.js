@@ -1,6 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 const cors = require('cors');
 const helmet = require('helmet');
 const sequelize = require('./config/database');
@@ -51,6 +53,9 @@ app.use('/api/upload', uploadRoutes);
 app.use((req, res, next) => {
   next(AppError.notFound(`Route ${req.originalUrl} not found`));
 });
+
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Global Error Handler
 app.use(errorHandler);
