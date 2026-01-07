@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const AppError = require('../utils/AppError');
 
 // Protect routes - verify JWT token
 const protect = async (req, res, next) => {
@@ -12,26 +13,29 @@ const protect = async (req, res, next) => {
     }
 
     if (!token) {
-      return res.status(401).json({ message: 'Not authorized, no token' });
+      return next(AppError.unauthorized('Not authorized, no token'));
     }
 
-    try {
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production');
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production');
 
-      // Get user from token
-      req.user = await User.findByPk(decoded.id);
+    // Get user from token
+    const user = await User.findByPk(decoded.id);
 
-      if (!req.user) {
-        return res.status(401).json({ message: 'User not found' });
-      }
-
-      next();
-    } catch (error) {
-      return res.status(401).json({ message: 'Not authorized, token failed' });
+    if (!user) {
+      return next(AppError.unauthorized('User not found with this token'));
     }
+
+    req.user = user;
+    next();
   } catch (error) {
-    return res.status(500).json({ message: 'Server error' });
+    if (error.name === 'JsonWebTokenError') {
+      return next(AppError.unauthorized('Invalid token'));
+    }
+    if (error.name === 'TokenExpiredError') {
+      return next(AppError.unauthorized('Token expired'));
+    }
+    next(error);
   }
 };
 
@@ -40,7 +44,7 @@ const admin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
   } else {
-    res.status(403).json({ message: 'Access denied. Admin only.' });
+    next(AppError.forbidden('Access denied. Admin only.'));
   }
 };
 
@@ -49,7 +53,7 @@ const landlordOrAdmin = (req, res, next) => {
   if (req.user && (req.user.role === 'landlord' || req.user.role === 'admin')) {
     next();
   } else {
-    res.status(403).json({ message: 'Access denied. Landlord or Admin only.' });
+    next(AppError.forbidden('Access denied. Landlord or Admin only.'));
   }
 };
 

@@ -1,8 +1,7 @@
 import axios from 'axios';
-import authService from './authService';
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-const API_URL = `${BASE_URL}/accommodations`;
+const API_URL = `${BASE_URL}/reviews`;
 
 // Tạo instance axios với cấu hình mặc định
 const axiosInstance = axios.create({
@@ -14,55 +13,45 @@ const axiosInstance = axios.create({
 
 // Thêm token vào request nếu có
 axiosInstance.interceptors.request.use((config) => {
-  const token = authService.getToken();
+  const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-const accommodationService = {
-  // Lấy tất cả nhà trọ với filters
-  getAll: async (params = {}) => {
+const reviewService = {
+  // Lấy tất cả đánh giá của một nhà trọ
+  getByAccommodation: async (accommodationId) => {
     try {
-      const response = await axiosInstance.get('/', { params });
+      const response = await axiosInstance.get(`/accommodation/${accommodationId}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Lấy nhà trọ theo ID
-  getById: async (id) => {
+  // Tạo đánh giá mới
+  create: async (reviewData) => {
     try {
-      const response = await axiosInstance.get(`/${id}`);
-      return response.data.accommodation;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
-  },
-
-  // Tạo nhà trọ mới
-  create: async (accommodationData) => {
-    try {
-      const response = await axiosInstance.post('/', accommodationData);
+      const response = await axiosInstance.post('/', reviewData);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Cập nhật nhà trọ
-  update: async (id, accommodationData) => {
+  // Cập nhật đánh giá
+  update: async (id, reviewData) => {
     try {
-      const response = await axiosInstance.put(`/${id}`, accommodationData);
+      const response = await axiosInstance.put(`/${id}`, reviewData);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Xóa nhà trọ
+  // Xóa đánh giá
   delete: async (id) => {
     try {
       const response = await axiosInstance.delete(`/${id}`);
@@ -73,5 +62,4 @@ const accommodationService = {
   }
 };
 
-export default accommodationService;
-
+export default reviewService; 

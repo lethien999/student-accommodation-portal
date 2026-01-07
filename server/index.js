@@ -9,6 +9,8 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const { apiLimiter } = require('./middleware/rateLimiter');
 const { createLogger, logger } = require('./utils/logger');
+const AppError = require('./utils/AppError');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
@@ -39,23 +41,11 @@ app.use('/api/reviews', reviewRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
-  res.status(404).json({
-    success: false,
-    message: `Route ${req.originalUrl} not found`
-  });
+  next(AppError.notFound(`Route ${req.originalUrl} not found`));
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  logger.error('Unhandled error:', err);
-  
-  const statusCode = err.statusCode || 500;
-  res.status(statusCode).json({
-    success: false,
-    message: err.message || 'Something went wrong!',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
-});
+// Global Error Handler
+app.use(errorHandler);
 
 // Database connection and server start
 const PORT = process.env.PORT || 5000;
@@ -64,7 +54,7 @@ const startServer = async () => {
   try {
     await sequelize.authenticate();
     logger.info('Database connection has been established successfully.');
-    
+
     // Sync all models
     await sequelize.sync();
     logger.info('All models were synchronized successfully.');
