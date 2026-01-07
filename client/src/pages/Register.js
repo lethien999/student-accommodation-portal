@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import authService from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
+/**
+ * Register Page - Sử dụng useAuth hook theo DIP
+ */
 const Register = () => {
   const navigate = useNavigate();
+  const { register, loading: authLoading, clearError } = useAuth();
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -13,7 +18,6 @@ const Register = () => {
     fullName: ''
   });
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -21,6 +25,7 @@ const Register = () => {
       [e.target.name]: e.target.value
     });
     setError('');
+    clearError();
   };
 
   const handleSubmit = async (e) => {
@@ -38,17 +43,13 @@ const Register = () => {
       return;
     }
 
-    setLoading(true);
+    const { confirmPassword, ...registerData } = formData;
+    const result = await register(registerData);
 
-    try {
-      const { confirmPassword, ...registerData } = formData;
-      await authService.register(registerData);
+    if (result.success) {
       navigate('/');
-      window.location.reload(); // Reload to update UI
-    } catch (err) {
-      setError(err.message || 'Đăng ký thất bại. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
+    } else {
+      setError(result.error || 'Đăng ký thất bại. Vui lòng thử lại.');
     }
   };
 
@@ -174,10 +175,10 @@ const Register = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={authLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {loading ? 'Đang đăng ký...' : 'Đăng ký'}
+              {authLoading ? 'Đang đăng ký...' : 'Đăng ký'}
             </button>
           </div>
         </form>

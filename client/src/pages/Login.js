@@ -1,15 +1,23 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import authService from '../services/authService';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
+/**
+ * Login Page - Sử dụng useAuth hook theo DIP
+ */
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, loading: authLoading, error: authError, clearError } = useAuth();
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+
+  // Redirect đến trang trước đó hoặc home
+  const from = location.state?.from?.pathname || '/';
 
   const handleChange = (e) => {
     setFormData({
@@ -17,21 +25,19 @@ const Login = () => {
       [e.target.name]: e.target.value
     });
     setError('');
+    clearError();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
-    try {
-      await authService.login(formData.email, formData.password);
-      navigate('/');
-      window.location.reload(); // Reload to update UI
-    } catch (err) {
-      setError(err.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
+    const result = await login(formData.email, formData.password);
+
+    if (result.success) {
+      navigate(from, { replace: true });
+    } else {
+      setError(result.error || 'Đăng nhập thất bại. Vui lòng thử lại.');
     }
   };
 
@@ -94,10 +100,10 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={authLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+              {authLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </button>
           </div>
         </form>

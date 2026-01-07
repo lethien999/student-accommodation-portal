@@ -1,16 +1,18 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import authService from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
+/**
+ * Navbar - Navigation component
+ * Sử dụng useAuth hook theo DIP - không phụ thuộc trực tiếp vào authService
+ */
 const Navbar = () => {
   const navigate = useNavigate();
-  const isAuthenticated = authService.isAuthenticated();
-  const currentUser = authService.getCurrentUser();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const handleLogout = () => {
-    authService.logout();
+    logout();
     navigate('/');
-    window.location.reload(); // Reload to update UI
   };
 
   return (
@@ -55,7 +57,7 @@ const Navbar = () => {
                   to="/profile"
                   className="text-gray-700 hover:text-indigo-600 transition duration-200"
                 >
-                  {currentUser?.username || 'Profile'}
+                  {user?.username || 'Profile'}
                 </Link>
                 <button
                   onClick={handleLogout}
