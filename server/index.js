@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const sequelize = require('./config/database');
@@ -7,6 +8,7 @@ const userRoutes = require('./routes/userRoutes');
 const accommodationRoutes = require('./routes/accommodationRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const healthRoutes = require('./routes/healthRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 const { apiLimiter } = require('./middleware/rateLimiter');
 const { createLogger, logger } = require('./utils/logger');
 const AppError = require('./utils/AppError');
@@ -15,7 +17,12 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // CORS configuration
 app.use(cors({
@@ -38,6 +45,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/accommodations', accommodationRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
