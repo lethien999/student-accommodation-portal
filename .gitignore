@@ -5,11 +5,14 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 .pnpm-store/
+
+# Environment variables (SENSITIVE)
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+*.env
 
 # React
 build/
@@ -17,11 +20,27 @@ build/
 dist/
 tmp/
 *.log
+
+# Uploads (local files)
+uploads/
+server/uploads/
+
+# Logs
+logs/
+server/logs/
+
+# OS files
 .DS_Store
 Thumbs.db
 
-# macOS
-.DS_Store
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
 
-# Windows
-Thumbs.db 
+# Test coverage
+coverage/
+
+# Docker
+docker-compose.override.yml 
