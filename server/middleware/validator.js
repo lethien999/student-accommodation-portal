@@ -1,17 +1,14 @@
 const { body, param, query, validationResult } = require('express-validator');
 
+const AppError = require('../utils/AppError');
+
 // Middleware to handle validation errors
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: errors.array().map(err => ({
-        field: err.path,
-        message: err.msg
-      }))
-    });
+    // Combine error messages
+    const message = errors.array().map(err => `${err.path}: ${err.msg}`).join(', ');
+    return next(AppError.badRequest(message));
   }
   next();
 };
@@ -188,7 +185,7 @@ const reviewValidation = {
   ],
 
   getByAccommodation: [
-    param('id')
+    param('accommodationId')
       .isInt({ min: 1 }).withMessage('Invalid accommodation ID'),
     handleValidationErrors
   ]

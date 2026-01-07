@@ -8,14 +8,15 @@ const {
   changePassword
 } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
+const { userValidation } = require('../middleware/validator');
 
 // Public routes
-router.post('/register', register);
-router.post('/login', login);
+router.post('/register', userValidation.register, register);
+router.post('/login', userValidation.login, login);
 
 // Protected routes
 router.get('/profile', protect, getProfile);
-router.put('/profile', protect, updateProfile);
+router.put('/profile', protect, userValidation.updateProfile, updateProfile);
 router.put('/password', protect, changePassword);
 
 module.exports = router;

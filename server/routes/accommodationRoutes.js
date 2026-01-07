@@ -8,14 +8,15 @@ const {
   remove
 } = require('../controllers/accommodationController');
 const { protect } = require('../middleware/auth');
+const { accommodationValidation } = require('../middleware/validator');
 
 // Public routes
-router.get('/', getAll);
-router.get('/:id', getById);
+router.get('/', accommodationValidation.getAll, getAll);
+router.get('/:id', accommodationValidation.getById, getById);
 
 // Protected routes
-router.post('/', protect, create);
-router.put('/:id', protect, update);
+router.post('/', protect, accommodationValidation.create, create);
+router.put('/:id', protect, accommodationValidation.update, update);
 router.delete('/:id', protect, remove);
 
 module.exports = router;
