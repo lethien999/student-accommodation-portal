@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: Production CI/CD
 
 on:
@@ -182,7 +183,7 @@ jobs:
 
         environment:
             name: "production"
-            url: https://yourdomain.com
+            url: "https://yourdomain.com"
 
         steps:
             - uses: actions/checkout@v4
@@ -217,15 +218,15 @@ jobs:
         needs: deploy
         runs-on: ubuntu-latest
         if: always()
+        env:
+            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
         steps:
             - name: Send Slack notification
-              if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
-              uses: 8398a7/action-slack@v3
+              if: env.SLACK_WEBHOOK_URL != ''
+              uses: slackapi/slack-github-action@v1.25.0
               with:
-                  status: ${{ job.status }}
-                  text: |
-                      Deployment to production: ${{ job.status }}
-                      Commit: ${{ github.sha }}
-                      Author: ${{ github.actor }}
-                  webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+                  payload: |
+                      {
+                        "text": "Deployment to production: ${{ job.status }}\nCommit: ${{ github.sha }}\nAuthor: ${{ github.actor }}"
+                      }
