@@ -9,9 +9,9 @@ const AccommodationList = () => {
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
-    minPrice: '',
-    maxPrice: '',
-    status: 'available',
+    minPrice: searchParams.get('minPrice') || '',
+    maxPrice: searchParams.get('maxPrice') || '',
+    status: searchParams.get('status') || 'available',
     page: 1,
     limit: 12
   });
@@ -34,7 +34,7 @@ const AccommodationList = () => {
         page: filters.page,
         limit: filters.limit
       };
-      
+
       // Remove empty filters
       Object.keys(params).forEach(key => {
         if (params[key] === '' || params[key] === null) {
@@ -181,11 +181,10 @@ const AccommodationList = () => {
                         currency: 'VND'
                       }).format(accommodation.price)}/tháng
                     </p>
-                    <span className={`inline-block px-2 py-1 rounded text-xs ${
-                      accommodation.status === 'available' 
-                        ? 'bg-green-100 text-green-800' 
+                    <span className={`inline-block px-2 py-1 rounded text-xs ${accommodation.status === 'available'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
-                    }`}>
+                      }`}>
                       {accommodation.status === 'available' ? 'Còn trống' : 'Đã cho thuê'}
                     </span>
                   </div>
@@ -214,11 +213,10 @@ const AccommodationList = () => {
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
-                        className={`px-4 py-2 border rounded-md ${
-                          page === pagination.currentPage
+                        className={`px-4 py-2 border rounded-md ${page === pagination.currentPage
                             ? 'bg-indigo-600 text-white'
                             : 'hover:bg-gray-50'
-                        }`}
+                          }`}
                       >
                         {page}
                       </button>

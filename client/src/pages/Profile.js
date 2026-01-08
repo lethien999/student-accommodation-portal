@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import authService from '../services/authService';
 import accommodationService from '../services/accommodationService';
 import dashboardService from '../services/dashboardService';
+import bookingService from '../services/bookingService'; // Phase 3
 
 const Profile = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, updateUser } = useAuth(); // Use user from context
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('profile');
 
   // Dashboard Data
   const [stats, setStats] = useState(null);
   const [accommodations, setAccommodations] = useState([]);
+
+  // Booking Data (Phase 3)
+  const [myBookings, setMyBookings] = useState([]);
+  const [bookingRequests, setBookingRequests] = useState([]);
 
   // Profile Edits
   const [editMode, setEditMode] = useState(false);
@@ -23,24 +29,37 @@ const Profile = () => {
     currentPassword: '', newPassword: '', confirmPassword: ''
   });
 
+  // Init Form Data when user changes, and set active tab
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    if (user) {
+      setFormData({
+        username: user.username || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        fullName: user.fullName || '',
+        avatar: user.avatar || ''
+      });
+      if (activeTab === 'profile' && user.role !== 'user') {
+        setActiveTab('dashboard');
+      }
+    }
+  }, [user]); // Run when user context updates
 
+  // Fetch Data based on Tab
   useEffect(() => {
     if (!user) return;
 
     const fetchData = async () => {
-      // Fetch My Accommodations if needed
-      if (activeTab === 'accommodations' || activeTab === 'properties') {
+      // 1. My Accommodations
+      if (activeTab === 'properties') {
         try {
+          // ... (keep existing logic)
           const response = await accommodationService.getAll({ limit: 100 });
-          // Filter client side for now (until we have '/my-accommodations' endpoint)
           setAccommodations(response.accommodations.filter(acc => acc.ownerId === user.id));
         } catch (e) { console.error(e); }
       }
 
-      // Fetch Stats if Dashboard
+      // 2. Dashboard Stats
       if (activeTab === 'dashboard') {
         try {
           let res;
@@ -51,43 +70,37 @@ const Profile = () => {
           if (res?.success) setStats(res.data);
         } catch (e) { console.error(e); }
       }
+
+      // 3. My Bookings (Viewing History)
+      if (activeTab === 'bookings') {
+        try {
+          const res = await bookingService.getMyBookings();
+          setMyBookings(res.bookings);
+        } catch (e) { console.error(e); }
+      }
+
+      // 4. Booking Requests (Landlord View)
+      if (activeTab === 'requests') {
+        try {
+          const res = await bookingService.getLandlordRequests();
+          setBookingRequests(res.bookings);
+        } catch (e) { console.error(e); }
+      }
     };
     fetchData();
   }, [activeTab, user]);
 
-  const fetchProfile = async () => {
-    try {
-      const response = await authService.getProfile();
-      setUser(response.user);
-      setFormData({
-        username: response.user.username || '',
-        email: response.user.email || '',
-        phone: response.user.phone || '',
-        fullName: response.user.fullName || '',
-        avatar: response.user.avatar || ''
-      });
-
-      // Set default tab based on role? Or keep profile?
-      // User requested dashboard experience. If admin configures it, maybe default to dashboard?
-      // Let's keep profile as default for now, can be changed.
-      if (response.user.role !== 'user') setActiveTab('dashboard'); // Auto-switch for admins
-
-    } catch (err) {
-      setError(err.message || 'Không thể tải thông tin profile');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Handle Updates
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
       const res = await authService.updateProfile(formData);
-      setUser(res.user);
+      updateUser(res.user); // Update Context
       setEditMode(false);
       alert('Cập nhật thành công');
     } catch (e) { alert(e.message); }
   };
+
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
@@ -99,27 +112,31 @@ const Profile = () => {
     } catch (e) { alert(e.message); }
   };
 
+  const handleBookingStatus = async (bookingId, status) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn ${status === 'confirmed' ? 'XÁC NHẬN lịch hẹn' : 'TỪ CHỐI'} này?`)) return;
+    try {
+      await bookingService.updateStatus(bookingId, status);
+      const res = await bookingService.getLandlordRequests();
+      setBookingRequests(res.bookings);
+      alert('Cập nhật thành công!');
+    } catch (e) { alert(e.response?.data?.message || 'Lỗi cập nhật'); }
+  };
+
   if (loading) return <div className="flex justify-center p-10">Đang tải...</div>;
   if (!user) return null;
 
-  // Build Tabs
   const tabs = [];
-  if (user.role !== 'user') {
-    tabs.push({ id: 'dashboard', label: 'Tổng quan' });
-  }
+  if (user.role !== 'user') tabs.push({ id: 'dashboard', label: 'Tổng quan' });
 
   tabs.push({ id: 'profile', label: 'Thông tin cá nhân' });
-  tabs.push({ id: 'password', label: 'Đổi mật khẩu' });
+  tabs.push({ id: 'bookings', label: 'Lịch hẹn xem phòng' }); // Renamed
 
   if (user.role === 'landlord' || user.role === 'admin') {
     tabs.push({ id: 'properties', label: 'Quản lý nhà trọ' });
+    tabs.push({ id: 'requests', label: 'Yêu cầu xem phòng' }); // Renamed
   }
-  if (user.role === 'admin') {
-    tabs.push({ id: 'users', label: 'Quản lý người dùng' });
-  }
-  if (user.role === 'sale') {
-    tabs.push({ id: 'leads', label: 'Khách hàng' });
-  }
+
+  tabs.push({ id: 'password', label: 'Đổi mật khẩu' });
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -129,15 +146,14 @@ const Profile = () => {
         </h1>
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Tabs Header */}
           <div className="border-b bg-gray-50 flex overflow-x-auto">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === tab.id
-                    ? 'bg-white text-indigo-600 border-t-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-800'
+                  ? 'bg-white text-indigo-600 border-t-2 border-indigo-600'
+                  : 'text-gray-500 hover:text-gray-800'
                   }`}
               >
                 {tab.label}
@@ -158,18 +174,6 @@ const Profile = () => {
                     </div>
                   ))}
                 </div>
-                {stats.rolesStats && (
-                  <div className="mt-6 border-t pt-6">
-                    <h3 className="font-bold mb-4">Phân bố người dùng</h3>
-                    <div className="flex gap-4 flex-wrap">
-                      {stats.rolesStats.map((r, idx) => (
-                        <div key={idx} className="bg-gray-100 px-4 py-2 rounded">
-                          {r.role}: <b>{r.count}</b>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
@@ -180,17 +184,17 @@ const Profile = () => {
                   <h2 className="text-xl font-bold">Danh sách tin đăng</h2>
                   <Link to="/accommodations/new" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">+ Đăng mới</Link>
                 </div>
-                <div className="grid grid-cols-1 gap-4">
-                  {accommodations.length === 0 ? <p>Chưa có bài đăng nào.</p> : accommodations.map(acc => (
-                    <div key={acc.id} className="border p-4 rounded-lg flex justify-between items-center hover:bg-gray-50">
+                <div className="space-y-4">
+                  {accommodations.map(acc => (
+                    <div key={acc.id} className="border p-4 rounded-lg flex justify-between items-center bg-white hover:bg-gray-50">
                       <div>
                         <h3 className="font-bold text-lg">{acc.name}</h3>
                         <p className="text-gray-500">{acc.address} - <span className="font-semibold text-green-600">{acc.price} VND</span></p>
-                        <span className={`text-xs px-2 py-1 rounded mt-1 inline-block ${acc.status === 'approved' ? 'bg-green-200' : 'bg-yellow-200'}`}>{acc.status}</span>
+                        <span className={`text-xs px-2 py-1 rounded mt-1 inline-block ${acc.status === 'approved' ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'}`}>{acc.status || 'Active'}</span>
                       </div>
-                      <div className="flex space-x-2">
-                        <Link to={`/accommodations/edit/${acc.id}`} className="bg-blue-100 text-blue-700 px-3 py-1 rounded">Sửa</Link>
-                        <Link to={`/accommodations/${acc.id}`} className="bg-gray-100 text-gray-700 px-3 py-1 rounded">Xem</Link>
+                      <div>
+                        <Link to={`/accommodations/edit/${acc.id}`} className="text-indigo-600 hover:underline mr-4">Sửa</Link>
+                        <Link to={`/accommodations/${acc.id}`} className="text-gray-600 hover:underline">Xem</Link>
                       </div>
                     </div>
                   ))}
@@ -198,7 +202,98 @@ const Profile = () => {
               </div>
             )}
 
-            {/* --- PROFILE VIEW --- */}
+            {/* --- REQUESTS VIEW (Student) --- */}
+            {activeTab === 'bookings' && (
+              <div>
+                <h2 className="text-xl font-bold mb-6">Lịch hẹn xem phòng đã đặt</h2>
+                {myBookings.length === 0 ? <p className="text-gray-500">Bạn chưa đặt lịch xem phòng nào.</p> : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phòng</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày xem</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Số người</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">SĐT Liên hệ</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {myBookings.map(bk => (
+                          <tr key={bk.id}>
+                            <td className="px-6 py-4 font-medium">{bk.accommodation?.name}</td>
+                            <td className="px-6 py-4">{bk.checkInDate}</td>
+                            <td className="px-6 py-4">{bk.numOfPeople || 1}</td>
+                            <td className="px-6 py-4">{bk.phoneNumber || 'N/A'}</td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                                ${bk.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                  bk.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'}`}>
+                                {bk.status === 'confirmed' ? 'Đã xác nhận' : bk.status === 'pending' ? 'Chờ xác nhận' : 'Đã hủy'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* --- REQUESTS VIEW (Landlord) --- */}
+            {activeTab === 'requests' && (
+              <div>
+                <h2 className="text-xl font-bold mb-6">Yêu cầu xem phòng từ khách</h2>
+                {bookingRequests.length === 0 ? <p className="text-gray-500">Chưa có yêu cầu nào.</p> : (
+                  <div className="space-y-4">
+                    {bookingRequests.map(req => (
+                      <div key={req.id} className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-bold text-lg text-indigo-700">{req.accommodation?.name}</h3>
+                            <div className="mt-2 text-gray-700">
+                              <p><span className="font-semibold">Khách:</span> {req.user?.fullName || req.user?.username}</p>
+                              <p><span className="font-semibold">SĐT:</span> <a href={`tel:${req.phoneNumber || req.user?.phone}`} className="text-blue-600 hover:underline">{req.phoneNumber || req.user?.phone || 'N/A'}</a></p>
+                              <p><span className="font-semibold">Ngày muốn xem:</span> {req.checkInDate}</p>
+                              <p><span className="font-semibold">Số người:</span> {req.numOfPeople || 1}</p>
+                              {req.note && <p className="text-sm bg-gray-50 p-2 rounded mt-2 italic">"{req.note}"</p>}
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase 
+                                                            ${req.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                req.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800'}`}>
+                              {req.status === 'confirmed' ? 'Đã lên lịch' : req.status === 'pending' ? 'Mới' : req.status}
+                            </span>
+
+                            {req.status === 'pending' && (
+                              <div className="flex gap-2 mt-2">
+                                <button
+                                  onClick={() => handleBookingStatus(req.id, 'confirmed')}
+                                  className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-medium"
+                                >Xác nhận lịch</button>
+                                <button
+                                  onClick={() => handleBookingStatus(req.id, 'rejected')}
+                                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-medium"
+                                >Từ chối</button>
+                              </div>
+                            )}
+                            {req.status === 'confirmed' && (
+                              <a href={`tel:${req.phoneNumber || req.user?.phone}`} className="text-blue-600 text-sm hover:underline mt-1">Gọi ngay</a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* --- PROFILE & PASSWORD VIEW --- */}
             {activeTab === 'profile' && (
               <div className="max-w-2xl">
                 <div className="flex items-center gap-4 mb-6">
@@ -213,7 +308,6 @@ const Profile = () => {
                     {editMode ? 'Hủy chỉnh sửa' : 'Chỉnh sửa thông tin'}
                   </button>
                 </div>
-
                 {editMode ? (
                   <form onSubmit={handleUpdateProfile} className="space-y-4">
                     <input className="block w-full border p-3 rounded" value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} placeholder="Họ và tên" />
@@ -225,13 +319,10 @@ const Profile = () => {
                   <div className="space-y-4 text-gray-700">
                     <div className="flex border-b py-2"><span className="w-32 font-medium">Email:</span> {user.email}</div>
                     <div className="flex border-b py-2"><span className="w-32 font-medium">SĐT:</span> {user.phone || 'Chưa cập nhật'}</div>
-                    <div className="flex border-b py-2"><span className="w-32 font-medium">Username:</span> {user.username}</div>
                   </div>
                 )}
               </div>
             )}
-
-            {/* --- PASSWORD VIEW --- */}
             {activeTab === 'password' && (
               <form onSubmit={handleChangePassword} className="max-w-md space-y-4">
                 <h3 className="text-lg font-bold">Đổi mật khẩu</h3>
@@ -241,15 +332,6 @@ const Profile = () => {
                 <button className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">Xác nhận đổi</button>
               </form>
             )}
-
-            {/* --- OTHER TABS placeholders --- */}
-            {(activeTab === 'users' || activeTab === 'leads') && (
-              <div className="text-center py-10 text-gray-500">
-                <p className="text-xl">Chức năng quản lý nâng cao (Phase 3)</p>
-                <p>Đang phát triển...</p>
-              </div>
-            )}
-
           </div>
         </div>
       </div>

@@ -191,9 +191,63 @@ const reviewValidation = {
   ]
 };
 
+// Booking validation rules (placeholder)
+// Booking validation rules
+const bookingValidation = {
+  create: [
+    body('accommodationId')
+      .notEmpty().withMessage('Accommodation ID is required')
+      .isInt({ min: 1 }).withMessage('Invalid accommodation ID'),
+    body('checkInDate')
+      .notEmpty().withMessage('Date is required')
+      .isISO8601().toDate().withMessage('Invalid date format'),
+    body('type')
+      .optional()
+      .isIn(['viewing', 'rental']).withMessage('Invalid type'),
+    body('checkOutDate')
+      .optional({ nullable: true })
+      .isISO8601().toDate().withMessage('Invalid date'),
+    body('totalPrice')
+      .optional({ nullable: true })
+      .isFloat({ min: 0 }),
+    body('numOfPeople')
+      .optional({ nullable: true })
+      .isInt({ min: 1 }),
+    body('phoneNumber')
+      .optional()
+      .trim()
+      .isLength({ min: 9, max: 15 }),
+    body('note')
+      .optional()
+      .trim()
+      .isLength({ max: 500 }),
+    handleValidationErrors
+  ],
+
+  updateStatus: [
+    param('id').isInt({ min: 1 }).withMessage('Invalid Booking ID'),
+    body('status')
+      .notEmpty().withMessage('Status is required')
+      .isIn(['confirmed', 'rejected', 'cancelled']).withMessage('Invalid status update'),
+    handleValidationErrors
+  ]
+};
+
+// Aliases for export consistency if needed, but better use standard names
+const accommodationValidationRules = accommodationValidation;
+const reviewValidationRules = reviewValidation;
+const bookingValidationRules = bookingValidation;
+const validate = handleValidationErrors;
+
 module.exports = {
   handleValidationErrors,
   userValidation,
   accommodationValidation,
-  reviewValidation
+  reviewValidation,
+  bookingValidation,
+  // Export Aliases for backwards compatibility or desired naming
+  accommodationValidationRules,
+  reviewValidationRules,
+  bookingValidationRules,
+  validate
 };

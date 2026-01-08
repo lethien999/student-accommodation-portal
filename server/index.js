@@ -13,6 +13,8 @@ const healthRoutes = require('./routes/healthRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const bookingRoutes = require('./routes/bookingRoutes'); // Phase 3
+
 const { apiLimiter } = require('./middleware/rateLimiter');
 const { createLogger, logger } = require('./utils/logger');
 const AppError = require('./utils/AppError');
@@ -53,6 +55,7 @@ app.use('/api/reviews', reviewRoutes);
 
 app.use('/api/upload', uploadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/bookings', bookingRoutes); // Booking Routes
 
 // 404 handler
 app.use((req, res, next) => {
@@ -104,4 +107,4 @@ process.on('unhandledRejection', (reason, promise) => {
   process.exit(1);
 });
 
-startServer(); 
+startServer();

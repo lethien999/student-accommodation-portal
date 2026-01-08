@@ -60,6 +60,11 @@ const Accommodation = sequelize.define('Accommodation', {
     type: DataTypes.TEXT,
     allowNull: true
   },
+  rooms: {
+    type: DataTypes.JSON, // List of {name, price, area, status}
+    allowNull: true,
+    defaultValue: []
+  },
   status: {
     type: DataTypes.ENUM('available', 'unavailable', 'pending'),
     defaultValue: 'available',

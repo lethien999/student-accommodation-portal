@@ -1,180 +1,166 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import accommodationService from '../services/accommodationService';
+import SearchBox from '../components/SearchBox';
 
 const Home = () => {
-  const [featuredAccommodations, setFeaturedAccommodations] = useState([]);
+  const [hotAccommodations, setHotAccommodations] = useState([]);
+  const [newAccommodations, setNewAccommodations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const fetchFeatured = async () => {
+    const fetchData = async () => {
       try {
-        const response = await accommodationService.getAll({
-          limit: 6,
+        // Fetch Hot (Top Views) - Assuming 'views' sorting is supported or just random for now if not
+        // Current backend supports sortBy.
+        const hotRes = await accommodationService.getAll({
+          limit: 4,
+          sortBy: 'views',
+          sortOrder: 'DESC'
+        });
+
+        // Fetch New (Latest)
+        const newRes = await accommodationService.getAll({
+          limit: 8,
           sortBy: 'createdAt',
           sortOrder: 'DESC'
         });
-        setFeaturedAccommodations(response.accommodations || []);
+
+        setHotAccommodations(hotRes.accommodations || []);
+        setNewAccommodations(newRes.accommodations || []);
       } catch (error) {
-        console.error('Error fetching accommodations:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFeatured();
+    fetchData();
   }, []);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/accommodations?search=${encodeURIComponent(searchQuery)}`;
-    }
-  };
+  const AccommodationCard = ({ item }) => (
+    <Link
+      to={`/accommodations/${item.id}`}
+      className="bg-white border rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group block h-full flex flex-col"
+    >
+      <div className="relative h-48 overflow-hidden">
+        <img
+          src={item.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500&q=80'}
+          alt={item.name}
+          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+        />
+        <span className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+          {item.type || 'Phòng trọ'}
+        </span>
+      </div>
+      <div className="p-4 flex flex-col flex-1">
+        <h3 className="font-bold text-gray-800 text-lg mb-1 line-clamp-2 group-hover:text-blue-600">
+          {item.name}
+        </h3>
+        <div className="flex items-center text-gray-500 text-sm mb-2">
+          <span>{item.address}</span>
+        </div>
+        <div className="flex items-center justify-between mt-auto">
+          <span className="font-bold text-red-600 text-lg">
+            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}/tháng
+          </span>
+          <span className="text-xs text-gray-400">{new Date(item.createdAt).toLocaleDateString('vi-VN')}</span>
+        </div>
+      </div>
+    </Link>
+  );
+
+  const locations = [
+    { name: 'Quận 7', img: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&q=80' },
+    { name: 'Bình Thạnh', img: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=400&q=80' },
+    { name: 'Quận 10', img: 'https://plus.unsplash.com/premium_photo-1661964177687-57388c2a5d92?w=400&q=80' },
+    { name: 'Thủ Đức', img: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b91d?w=400&q=80' },
+  ];
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-        <div className="container mx-auto px-4 py-24">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold mb-4">
-              Tìm Nhà Trọ Phù Hợp Cho Sinh Viên
-            </h1>
-            <p className="text-xl mb-8">
-              Hàng ngàn lựa chọn nhà trọ chất lượng với giá cả phải chăng
-            </p>
-            
-            {/* Search Bar */}
-            <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
-              <div className="flex">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Tìm kiếm theo tên, địa chỉ..."
-                  className="flex-1 px-6 py-4 rounded-l-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                />
-                <button
-                  type="submit"
-                  className="bg-indigo-700 hover:bg-indigo-800 px-8 py-4 rounded-r-lg font-semibold transition duration-200"
-                >
-                  Tìm kiếm
-                </button>
-              </div>
-            </form>
+    <div className="min-h-screen bg-gray-50">
 
-            <div className="mt-8 flex justify-center space-x-4">
-              <Link
-                to="/accommodations"
-                className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-200"
-              >
-                Xem tất cả nhà trọ
-              </Link>
-              <Link
-                to="/map"
-                className="bg-indigo-700 hover:bg-indigo-800 px-6 py-3 rounded-lg font-semibold transition duration-200"
-              >
-                Xem trên bản đồ
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Features Section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center">
-            <div className="bg-indigo-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Tìm kiếm dễ dàng</h3>
-            <p className="text-gray-600">Tìm nhà trọ phù hợp với nhu cầu của bạn một cách nhanh chóng</p>
-          </div>
-          <div className="text-center">
-            <div className="bg-indigo-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Đáng tin cậy</h3>
-            <p className="text-gray-600">Thông tin nhà trọ được xác thực và đánh giá bởi người dùng</p>
-          </div>
-          <div className="text-center">
-            <div className="bg-indigo-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Xem trên bản đồ</h3>
-            <p className="text-gray-600">Xem vị trí nhà trọ trên bản đồ và tìm đường đi</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Featured Accommodations */}
-      <div className="bg-gray-50 py-16">
+      {/* 1. HERO & SEARCH */}
+      <div className="bg-gradient-to-b from-blue-700 to-blue-500 text-white pb-16 pt-10">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Nhà trọ nổi bật</h2>
-          
-          {loading ? (
-            <div className="text-center py-8">Đang tải...</div>
-          ) : featuredAccommodations.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredAccommodations.map((accommodation) => (
-                <Link
-                  key={accommodation.id}
-                  to={`/accommodations/${accommodation.id}`}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200"
-                >
-                  {accommodation.images && accommodation.images.length > 0 ? (
-                    <img
-                      src={accommodation.images[0]}
-                      alt={accommodation.name}
-                      className="w-full h-48 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                      <span className="text-gray-400">Không có hình ảnh</span>
-                    </div>
-                  )}
-                  <div className="p-4">
-                    <h3 className="text-xl font-semibold mb-2">{accommodation.name}</h3>
-                    <p className="text-gray-600 mb-2">{accommodation.address}</p>
-                    <p className="text-indigo-600 font-bold text-lg">
-                      {new Intl.NumberFormat('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND'
-                      }).format(accommodation.price)}/tháng
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              Chưa có nhà trọ nào
+          <h1 className="text-3xl md:text-4xl font-bold text-center mb-2">Kênh thông tin Phòng trọ số 1 Việt Nam</h1>
+          <p className="text-center text-blue-100 mb-8">Hơn 50.000+ tin đăng chính chủ đang chờ bạn</p>
+          <SearchBox />
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 -mt-8 pb-12 space-y-12">
+
+        {/* 2. POPULAR LOCATIONS */}
+        <section>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 mt-12">Khu vực nổi bật</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {locations.map(loc => (
+              <Link
+                key={loc.name}
+                to={`/accommodations?search=${loc.name}`}
+                className="relative rounded-lg overflow-hidden h-40 group shadow-md"
+              >
+                <img src={loc.img} alt={loc.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
+                  <span className="text-white font-bold text-xl shadow-sm">{loc.name}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* 3. HOT LISTINGS */}
+        <section>
+          <div className="flex justify-between items-end mb-6">
+            <h2 className="text-2xl font-bold text-red-600">Tin nổi bật</h2>
+            <Link to="/accommodations?sort=views" className="text-blue-600 hover:underline">Xem tất cả</Link>
+          </div>
+          {loading ? <p>Đang tải...</p> : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {hotAccommodations.map(item => <AccommodationCard key={item.id} item={item} />)}
             </div>
           )}
+        </section>
 
-          <div className="text-center mt-8">
-            <Link
-              to="/accommodations"
-              className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200"
-            >
-              Xem tất cả nhà trọ
-            </Link>
+        {/* 4. NEW LISTINGS */}
+        <section>
+          <div className="flex justify-between items-end mb-6">
+            <h2 className="text-2xl font-bold text-blue-700">Tin mới đăng</h2>
+            <Link to="/accommodations?sort=createdAt" className="text-blue-600 hover:underline">Xem tất cả</Link>
           </div>
-        </div>
+          {loading ? <p>Đang tải...</p> : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {newAccommodations.map(item => <AccommodationCard key={item.id} item={item} />)}
+            </div>
+          )}
+        </section>
+
+        {/* 5. WHY CHOOSE US (Features re-styled) */}
+        <section className="bg-white p-8 rounded-xl shadow-sm border">
+          <h2 className="text-center font-bold text-2xl mb-8">Tại sao chọn chúng tôi?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div>
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🏠</div>
+              <h3 className="font-bold text-lg">Thông tin chính xác</h3>
+              <p className="text-gray-500 mt-2">Dữ liệu được kiểm duyệt chặt chẽ, đảm bảo đúng thực tế.</p>
+            </div>
+            <div>
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🔍</div>
+              <h3 className="font-bold text-lg">Tìm kiếm dễ dàng</h3>
+              <p className="text-gray-500 mt-2">Công cụ lọc thông minh, giúp bạn tìm phòng ưng ý nhanh nhất.</p>
+            </div>
+            <div>
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🛡️</div>
+              <h3 className="font-bold text-lg">An toàn & Uy tín</h3>
+              <p className="text-gray-500 mt-2">Kết nối trực tiếp với chủ nhà, không qua trung gian.</p>
+            </div>
+          </div>
+        </section>
+
       </div>
     </div>
   );
 };
 
 export default Home;
-
