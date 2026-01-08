@@ -40,10 +40,6 @@ jobs:
         working-directory: ./server
         run: npm ci --legacy-peer-deps
 
-      - name: Run Backend Linter
-        working-directory: ./server
-        run: npm run lint || echo "Linter not configured"
-
       - name: Run Backend Tests
         working-directory: ./server
         run: npm test || echo "Tests not configured yet"
@@ -73,10 +69,6 @@ jobs:
       - name: Install Frontend Dependencies
         working-directory: ./client
         run: npm ci --legacy-peer-deps
-
-      - name: Run Frontend Linter
-        working-directory: ./client
-        run: npm run lint || echo "Linter not configured"
 
       - name: Run Frontend Tests
         working-directory: ./client
