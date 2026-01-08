@@ -16,10 +16,6 @@ import AccommodationForm from './pages/AccommodationForm';
 import SavedAccommodations from './pages/SavedAccommodations';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Dashboard Pages
-import AdminDashboard from './pages/dashboard/AdminDashboard';
-import LandlordDashboard from './pages/dashboard/LandlordDashboard';
-
 function App() {
   return (
     <ErrorBoundary>
