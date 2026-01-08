@@ -145,7 +145,7 @@ jobs:
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
                   build-args: |
-                      REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL || 'http://localhost:5000/api' }}
+                      REACT_APP_API_URL=${{ secrets['REACT_APP_API_URL'] || 'http://localhost:5000/api' }}
 
     # Security scanning
     security-scan:
@@ -181,9 +181,7 @@ jobs:
         runs-on: ubuntu-latest
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
-        environment:
-            name: "production"
-            url: "https://yourdomain.com"
+        environment: "production"
 
         steps:
             - uses: actions/checkout@v4
@@ -191,10 +189,10 @@ jobs:
             - name: Deploy to Production Server
               uses: appleboy/ssh-action@v1.0.0
               with:
-                  host: ${{ secrets.PROD_HOST }}
-                  username: ${{ secrets.PROD_USER }}
-                  key: ${{ secrets.PROD_SSH_KEY }}
-                  port: ${{ secrets.PROD_PORT || 22 }}
+                  host: ${{ secrets['PROD_HOST'] }}
+                  username: ${{ secrets['PROD_USER'] }}
+                  key: ${{ secrets['PROD_SSH_KEY'] }}
+                  port: ${{ secrets['PROD_PORT'] || 22 }}
                   script: |
                       cd /opt/student-accommodation-portal
 
@@ -219,7 +217,7 @@ jobs:
         runs-on: ubuntu-latest
         if: always()
         env:
-            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+            SLACK_WEBHOOK_URL: ${{ secrets['SLACK_WEBHOOK_URL'] }}
 
         steps:
             - name: Send Slack notification
