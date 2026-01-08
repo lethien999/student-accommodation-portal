@@ -3,6 +3,7 @@ name: Production CI/CD
 
 permissions:
     contents: read
+    packages: read
     security-events: write
 
 on:
@@ -159,6 +160,13 @@ jobs:
 
         steps:
             - uses: actions/checkout@v4
+
+            - name: Log in to Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Run Trivy vulnerability scanner - Backend
               uses: aquasecurity/trivy-action@master
