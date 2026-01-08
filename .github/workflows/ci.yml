@@ -38,7 +38,7 @@ jobs:
 
       - name: Install Backend Dependencies
         working-directory: ./server
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Run Backend Linter
         working-directory: ./server
@@ -72,7 +72,7 @@ jobs:
 
       - name: Install Frontend Dependencies
         working-directory: ./client
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Run Frontend Linter
         working-directory: ./client
@@ -105,8 +105,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd server && npm ci
-          cd ../client && npm ci
+          cd server && npm ci --legacy-peer-deps
+          cd ../client && npm ci --legacy-peer-deps
 
       - name: Build All
         run: |

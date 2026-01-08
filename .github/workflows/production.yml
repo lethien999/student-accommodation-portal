@@ -47,11 +47,11 @@ jobs:
 
             - name: Install Backend Dependencies
               working-directory: ./server
-              run: npm ci
+              run: npm ci --legacy-peer-deps
 
             - name: Install Frontend Dependencies
               working-directory: ./client
-              run: npm ci
+              run: npm ci --legacy-peer-deps
 
             - name: Run Backend Tests
               working-directory: ./server
