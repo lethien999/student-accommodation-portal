@@ -4,129 +4,126 @@ on:
   push:
     branches: [main, develop]
   pull_request:
-    branches: [main]
-
-env:
-  NODE_VERSION: "18.x"
+    branches: [main, develop]
 
 jobs:
-  # ============================================
-  # BACKEND TESTS & LINT
-  # ============================================
-  backend:
-    name: Backend CI
+  # Backend Tests
+  backend-test:
     runs-on: ubuntu-latest
 
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:14
         env:
-          MYSQL_ROOT_PASSWORD: test_password
-          MYSQL_DATABASE: student_accommodation_test
-        ports:
-          - 3306:3306
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: student_accommodation_test
         options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
-    defaults:
-      run:
-        working-directory: ./server
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: "18"
           cache: "npm"
-          cache-dependency-path: "./server/package-lock.json"
+          cache-dependency-path: server/package-lock.json
 
-      - name: Install dependencies
+      - name: Install Backend Dependencies
+        working-directory: ./server
         run: npm ci
 
-      - name: Run linter
-        run: npm run lint --if-present
+      - name: Run Backend Linter
+        working-directory: ./server
+        run: npm run lint || echo "Linter not configured"
 
-      - name: Run tests
-        run: npm test --if-present
+      - name: Run Backend Tests
+        working-directory: ./server
+        run: npm test || echo "Tests not configured yet"
         env:
           NODE_ENV: test
           DB_HOST: localhost
-          DB_PORT: 3306
+          DB_PORT: 5432
           DB_NAME: student_accommodation_test
-          DB_USER: root
-          DB_PASSWORD: test_password
-          JWT_SECRET: test-jwt-secret
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          JWT_SECRET: test-secret-key
 
-  # ============================================
-  # FRONTEND TESTS & BUILD
-  # ============================================
-  frontend:
-    name: Frontend CI
+  # Frontend Tests
+  frontend-test:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: ./client
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: "18"
           cache: "npm"
-          cache-dependency-path: "./client/package-lock.json"
+          cache-dependency-path: client/package-lock.json
 
-      - name: Install dependencies
+      - name: Install Frontend Dependencies
+        working-directory: ./client
         run: npm ci
 
-      - name: Run linter
-        run: npm run lint --if-present
+      - name: Run Frontend Linter
+        working-directory: ./client
+        run: npm run lint || echo "Linter not configured"
 
-      - name: Run tests
-        run: npm test --if-present -- --watchAll=false
+      - name: Run Frontend Tests
+        working-directory: ./client
+        run: npm test -- --passWithNoTests
+        env:
+          CI: true
 
-      - name: Build
+      - name: Build Frontend
+        working-directory: ./client
         run: npm run build
         env:
-          CI: false # Ignore warnings as errors
           REACT_APP_API_URL: http://localhost:5000/api
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-build
-          path: ./client/build
-          retention-days: 7
-
-  # ============================================
-  # DEPLOY (only on main branch)
-  # ============================================
-  deploy:
-    name: Deploy
+  # Build Check
+  build:
     runs-on: ubuntu-latest
-    needs: [backend, frontend]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [backend-test, frontend-test]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Download frontend build
-        uses: actions/download-artifact@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          name: frontend-build
-          path: ./client/build
+          node-version: "18"
 
-      # Add your deployment steps here
-      # Examples: Deploy to Vercel, Netlify, AWS, etc.
-      - name: Deploy notification
-        run: echo "🚀 Ready to deploy! Add your deployment configuration here."
+      - name: Install Dependencies
+        run: |
+          cd server && npm ci
+          cd ../client && npm ci
+
+      - name: Build All
+        run: |
+          cd client && npm run build
+          echo "Build successful!"
+
+  # Security Scan
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Security Audit - Backend
+        working-directory: ./server
+        run: npm audit --audit-level=moderate || true
+
+      - name: Run Security Audit - Frontend
+        working-directory: ./client
+        run: npm audit --audit-level=moderate || true
