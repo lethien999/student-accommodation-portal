@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, loading: authLoading, error: authError, clearError } = useAuth();
+  const { login, loading: authLoading, clearError } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -17,7 +17,7 @@ const Login = () => {
   const [error, setError] = useState('');
 
   // Redirect đến trang trước đó hoặc home
-  const from = location.state?.from?.pathname || '/';
+
 
   const handleChange = (e) => {
     setFormData({
