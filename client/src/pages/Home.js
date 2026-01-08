@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import accommodationService from '../services/accommodationService';
 import SearchBox from '../components/SearchBox';
+import AccommodationCard from '../components/AccommodationCard';
 
 const Home = () => {
   const [hotAccommodations, setHotAccommodations] = useState([]);
@@ -38,37 +39,7 @@ const Home = () => {
     fetchData();
   }, []);
 
-  const AccommodationCard = ({ item }) => (
-    <Link
-      to={`/accommodations/${item.id}`}
-      className="bg-white border rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group block h-full flex flex-col"
-    >
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={item.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500&q=80'}
-          alt={item.name}
-          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-        />
-        <span className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
-          {item.type || 'Phòng trọ'}
-        </span>
-      </div>
-      <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-bold text-gray-800 text-lg mb-1 line-clamp-2 group-hover:text-blue-600">
-          {item.name}
-        </h3>
-        <div className="flex items-center text-gray-500 text-sm mb-2">
-          <span>{item.address}</span>
-        </div>
-        <div className="flex items-center justify-between mt-auto">
-          <span className="font-bold text-red-600 text-lg">
-            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}/tháng
-          </span>
-          <span className="text-xs text-gray-400">{new Date(item.createdAt).toLocaleDateString('vi-VN')}</span>
-        </div>
-      </div>
-    </Link>
-  );
+
 
   const locations = [
     { name: 'Quận 7', img: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&q=80' },

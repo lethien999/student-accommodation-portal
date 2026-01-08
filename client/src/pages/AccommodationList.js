@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import accommodationService from '../services/accommodationService';
+import AccommodationCard from '../components/AccommodationCard';
 
 const AccommodationList = () => {
   const [searchParams] = useSearchParams();
@@ -156,39 +157,7 @@ const AccommodationList = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {accommodations.map((accommodation) => (
-                <Link
-                  key={accommodation.id}
-                  to={`/accommodations/${accommodation.id}`}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200"
-                >
-                  {accommodation.images && accommodation.images.length > 0 ? (
-                    <img
-                      src={accommodation.images[0]}
-                      alt={accommodation.name}
-                      className="w-full h-48 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                      <span className="text-gray-400">Không có hình ảnh</span>
-                    </div>
-                  )}
-                  <div className="p-4">
-                    <h3 className="text-xl font-semibold mb-2">{accommodation.name}</h3>
-                    <p className="text-gray-600 mb-2 text-sm">{accommodation.address}</p>
-                    <p className="text-indigo-600 font-bold text-lg mb-2">
-                      {new Intl.NumberFormat('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND'
-                      }).format(accommodation.price)}/tháng
-                    </p>
-                    <span className={`inline-block px-2 py-1 rounded text-xs ${accommodation.status === 'available'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                      }`}>
-                      {accommodation.status === 'available' ? 'Còn trống' : 'Đã cho thuê'}
-                    </span>
-                  </div>
-                </Link>
+                <AccommodationCard key={accommodation.id} item={accommodation} />
               ))}
             </div>
 
@@ -214,8 +183,8 @@ const AccommodationList = () => {
                         key={page}
                         onClick={() => handlePageChange(page)}
                         className={`px-4 py-2 border rounded-md ${page === pagination.currentPage
-                            ? 'bg-indigo-600 text-white'
-                            : 'hover:bg-gray-50'
+                          ? 'bg-indigo-600 text-white'
+                          : 'hover:bg-gray-50'
                           }`}
                       >
                         {page}

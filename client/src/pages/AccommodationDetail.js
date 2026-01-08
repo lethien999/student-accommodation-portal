@@ -152,9 +152,7 @@ const AccommodationDetail = () => {
           </div>
 
           {/* Reviews */}
-          <div className="bg-white shadow-lg rounded-2xl p-8">
-            <ReviewSection accommodationId={id} />
-          </div>
+          <ReviewSection accommodationId={id} />
         </div>
 
         {/* RIGHT COLUMN: Contact & Booking */}

@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const sequelize = require('../config/database');
 const Accommodation = require('../models/Accommodation');
 const User = require('../models/User');
 const AppError = require('../utils/AppError');
@@ -51,6 +52,28 @@ class AccommodationService {
 
         const { count, rows } = await this.accommodationModel.findAndCountAll({
             where,
+            attributes: {
+                include: [
+                    [
+                        sequelize.literal(`(
+                            SELECT AVG(rating)
+                            FROM Reviews AS review
+                            WHERE
+                                review.accommodationId = Accommodation.id
+                        )`),
+                        'averageRating'
+                    ],
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM Reviews AS review
+                            WHERE
+                                review.accommodationId = Accommodation.id
+                        )`),
+                        'reviewCount'
+                    ]
+                ]
+            },
             include: [
                 {
                     model: User,
@@ -60,7 +83,8 @@ class AccommodationService {
             ],
             order: [[sortBy, sortOrder]],
             limit: parseInt(limit),
-            offset: offset
+            offset: offset,
+            subQuery: false // Important for attributes include + limit
         });
 
         return {
@@ -77,6 +101,28 @@ class AccommodationService {
      */
     async findById(id) {
         const accommodation = await this.accommodationModel.findByPk(id, {
+            attributes: {
+                include: [
+                    [
+                        sequelize.literal(`(
+                            SELECT AVG(rating)
+                            FROM Reviews AS review
+                            WHERE
+                                review.accommodationId = Accommodation.id
+                        )`),
+                        'averageRating'
+                    ],
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM Reviews AS review
+                            WHERE
+                                review.accommodationId = Accommodation.id
+                        )`),
+                        'reviewCount'
+                    ]
+                ]
+            },
             include: [
                 {
                     model: User,

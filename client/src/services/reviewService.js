@@ -24,7 +24,7 @@ const reviewService = {
   // Lấy tất cả đánh giá của một nhà trọ
   getByAccommodation: async (accommodationId) => {
     try {
-      const response = await axiosInstance.get(`/accommodation/${accommodationId}`);
+      const response = await axiosInstance.get(`/${accommodationId}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
