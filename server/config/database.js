@@ -4,12 +4,12 @@ const { Sequelize } = require('sequelize');
 // Database configuration
 const sequelize = new Sequelize(
   process.env.DB_NAME || 'student_accommodation',
-  process.env.DB_USER || 'root',
-  process.env.DB_PASSWORD || '',
+  process.env.DB_USER || 'postgres',
+  process.env.DB_PASSWORD || 'postgres',
   {
     host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 3306,
-    dialect: 'mysql',
+    port: process.env.DB_PORT || 5432,
+    dialect: process.env.DB_DIALECT || 'postgres',
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {
       max: 5,
