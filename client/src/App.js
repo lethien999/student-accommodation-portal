@@ -19,8 +19,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Dashboard Pages
 import AdminDashboard from './pages/dashboard/AdminDashboard';
 import LandlordDashboard from './pages/dashboard/LandlordDashboard';
-import SaleDashboard from './pages/dashboard/SaleDashboard';
-import StudentDashboard from './pages/dashboard/StudentDashboard';
 
 function App() {
   return (
