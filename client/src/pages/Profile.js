@@ -8,6 +8,7 @@ import bookingService from '../services/bookingService'; // Phase 3
 
 const Profile = () => {
   const { user, updateUser } = useAuth(); // Use user from context
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
 
   // Dashboard Data
@@ -48,41 +49,39 @@ const Profile = () => {
     if (!user) return;
 
     const fetchData = async () => {
-      // 1. My Accommodations
-      if (activeTab === 'properties') {
-        try {
-          // ... (keep existing logic)
+      setLoading(true);
+      try {
+        // 1. My Accommodations
+        if (activeTab === 'properties') {
           const response = await accommodationService.getAll({ limit: 100 });
           setAccommodations(response.accommodations.filter(acc => acc.ownerId === user.id));
-        } catch (e) { console.error(e); }
-      }
+        }
 
-      // 2. Dashboard Stats
-      if (activeTab === 'dashboard') {
-        try {
+        // 2. Dashboard Stats
+        if (activeTab === 'dashboard') {
           let res;
           if (user.role === 'admin') res = await dashboardService.getAdminStats();
           else if (user.role === 'landlord') res = await dashboardService.getLandlordStats();
           else if (user.role === 'sale') res = await dashboardService.getSaleStats();
 
           if (res?.success) setStats(res.data);
-        } catch (e) { console.error(e); }
-      }
+        }
 
-      // 3. My Bookings (Viewing History)
-      if (activeTab === 'bookings') {
-        try {
+        // 3. My Bookings (Viewing History)
+        if (activeTab === 'bookings') {
           const res = await bookingService.getMyBookings();
           setMyBookings(res.bookings);
-        } catch (e) { console.error(e); }
-      }
+        }
 
-      // 4. Booking Requests (Landlord View)
-      if (activeTab === 'requests') {
-        try {
+        // 4. Booking Requests (Landlord View)
+        if (activeTab === 'requests') {
           const res = await bookingService.getLandlordRequests();
           setBookingRequests(res.bookings);
-        } catch (e) { console.error(e); }
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
