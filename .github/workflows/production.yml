@@ -1,6 +1,10 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: Production CI/CD
 
+permissions:
+    contents: read
+    security-events: write
+
 on:
     push:
         branches: [main]
