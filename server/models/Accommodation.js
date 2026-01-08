@@ -60,20 +60,39 @@ const Accommodation = sequelize.define('Accommodation', {
     type: DataTypes.TEXT,
     allowNull: true
   },
+  services: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: []
+  },
+  detailInfo: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: {
+      general: {},
+      features: {}
+    }
+  },
   rooms: {
     type: DataTypes.JSON, // List of {name, price, area, status}
     allowNull: true,
     defaultValue: []
   },
   status: {
-    type: DataTypes.ENUM('available', 'unavailable', 'pending'),
-    defaultValue: 'available',
-    allowNull: false
+    type: DataTypes.ENUM('available', 'rented', 'maintenance'),
+    defaultValue: 'available'
+  },
+  verifyStatus: {
+    type: DataTypes.ENUM('none', 'pending', 'verified', 'rejected'),
+    defaultValue: 'none'
+  },
+  isVerified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   },
   views: {
     type: DataTypes.INTEGER,
-    defaultValue: 0,
-    allowNull: false
+    defaultValue: 0
   }
 }, {
   timestamps: true,

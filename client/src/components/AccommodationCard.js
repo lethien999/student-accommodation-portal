@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaStar, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaStar, FaHeart, FaRegHeart, FaCheckCircle } from 'react-icons/fa';
 import savedService from '../services/savedService';
 import { useAuth } from '../context/AuthContext';
 
@@ -69,8 +69,11 @@ const AccommodationCard = ({ item }) => {
             </div>
 
             <div className="p-4 flex flex-col flex-1">
-                <h3 className="font-bold text-gray-800 text-lg mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                <h3 className="font-bold text-gray-800 text-lg mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors flex items-center gap-1">
                     {item.name}
+                    {item.isVerified && (
+                        <FaCheckCircle className="text-blue-500 text-base" title="Tin đã xác thực" />
+                    )}
                 </h3>
 
                 <div className="flex items-center text-gray-500 text-sm mb-2">

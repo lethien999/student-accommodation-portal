@@ -11,10 +11,11 @@ const accommodationRoutes = require('./routes/accommodationRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
 const savedRoutes = require('./routes/savedRoutes');
+const verificationRoutes = require('./routes/verificationRoutes');
 
 const dashboardRoutes = require('./routes/dashboardRoutes');
-const bookingRoutes = require('./routes/bookingRoutes'); // Phase 3
 
 const { apiLimiter } = require('./middleware/rateLimiter');
 const { createLogger, logger } = require('./utils/logger');
@@ -58,6 +59,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/favorites', savedRoutes);
+app.use('/api/verification', verificationRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

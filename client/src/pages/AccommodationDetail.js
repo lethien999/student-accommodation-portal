@@ -7,6 +7,8 @@ import { useAuth } from '../context/AuthContext';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import ReviewSection from '../components/ReviewSection';
 import BookingModal from '../components/BookingModal';
+import CostEstimateSection from '../components/CostEstimateSection';
+import DetailInfoSection from '../components/DetailInfoSection';
 
 const AccommodationDetail = () => {
   const { id } = useParams();
@@ -163,6 +165,10 @@ const AccommodationDetail = () => {
                 <h3 className="font-bold text-xl text-gray-800 mb-4 border-l-4 border-indigo-600 pl-3">Thông tin mô tả</h3>
                 <p className="text-gray-600 whitespace-pre-line leading-relaxed text-lg">{accommodation.description}</p>
               </div>
+
+              {/* Phase 8: Detailed Specs & Costs */}
+              <CostEstimateSection services={accommodation.services} />
+              <DetailInfoSection detailInfo={accommodation.detailInfo} />
 
               <div className="mb-6">
                 <h3 className="font-bold text-xl text-gray-800 mb-4 border-l-4 border-indigo-600 pl-3">Tiện ích</h3>
