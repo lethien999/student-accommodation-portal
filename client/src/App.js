@@ -13,6 +13,7 @@ import Map from './pages/Map';
 import AccommodationList from './pages/AccommodationList';
 import AccommodationDetail from './pages/AccommodationDetail';
 import AccommodationForm from './pages/AccommodationForm';
+import SavedAccommodations from './pages/SavedAccommodations';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Dashboard Pages
@@ -37,10 +38,10 @@ function App() {
               <Route path="/accommodations/:id" element={<AccommodationDetail />} />
 
               {/* Unified Profile/Dashboard Routes */}
-              <Route
-                path="/profile"
-                element={<ProtectedRoute><Profile /></ProtectedRoute>}
-              />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/saved-accommodations" element={<ProtectedRoute><SavedAccommodations /></ProtectedRoute>} />
+
+              {/* Landlord Routes */}
               <Route
                 path="/admin"
                 element={<ProtectedRoute roles={['admin']}><Profile /></ProtectedRoute>}

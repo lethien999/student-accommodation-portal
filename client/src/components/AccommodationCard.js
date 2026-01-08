@@ -1,11 +1,34 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaStar } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaStar, FaHeart, FaRegHeart } from 'react-icons/fa';
+import savedService from '../services/savedService';
+import { useAuth } from '../context/AuthContext';
 
 const AccommodationCard = ({ item }) => {
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const [isSaved, setIsSaved] = useState(!!item.isSaved);
+
     // Format averageRating safely
     const rating = item.averageRating ? parseFloat(item.averageRating).toFixed(1) : null;
     const reviewCount = item.reviewCount || 0;
+
+    const handleToggleSave = async (e) => {
+        e.preventDefault(); // Prevent navigation
+        if (!isAuthenticated) {
+            if (window.confirm('Bạn cần đăng nhập để lưu tin.')) {
+                navigate('/login');
+            }
+            return;
+        }
+
+        try {
+            await savedService.toggleSave(item.id);
+            setIsSaved(!isSaved);
+        } catch (error) {
+            console.error('Error toggling save', error);
+        }
+    };
 
     return (
         <Link
@@ -21,6 +44,19 @@ const AccommodationCard = ({ item }) => {
                 <span className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
                     {item.type || 'Phòng trọ'}
                 </span>
+
+                {/* Save Button */}
+                <button
+                    onClick={handleToggleSave}
+                    className="absolute top-2 left-2 p-2 rounded-full bg-white bg-opacity-90 shadow-sm hover:bg-opacity-100 transition-all z-10"
+                    title={isSaved ? "Bỏ lưu" : "Lưu tin"}
+                >
+                    {isSaved ? (
+                        <FaHeart className="text-red-500 text-lg" />
+                    ) : (
+                        <FaRegHeart className="text-gray-500 text-lg hover:text-red-500" />
+                    )}
+                </button>
 
                 {/* Rating Badge Overlay */}
                 {rating && (

@@ -2,26 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import accommodationService from '../services/accommodationService';
 import authService from '../services/authService';
+import savedService from '../services/savedService';
+import { useAuth } from '../context/AuthContext';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import ReviewSection from '../components/ReviewSection';
 import BookingModal from '../components/BookingModal';
 
 const AccommodationDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated, currentUser } = useAuth(); // Use Hook
   const [accommodation, setAccommodation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isOwner, setIsOwner] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [showRoomsModal, setShowRoomsModal] = useState(false); // New Modal state
+  const [showRoomsModal, setShowRoomsModal] = useState(false);
 
   useEffect(() => {
     const fetchAccommodation = async () => {
       try {
         const data = await accommodationService.getById(id);
         setAccommodation(data);
-        const user = authService.getCurrentUser();
-        setIsOwner(user?.id === data.ownerId);
+        setIsSaved(!!data.isSaved);
+
+        setIsOwner(currentUser?.id === data.ownerId);
       } catch (err) {
         setError(err.message || 'Failed to fetch accommodation');
       } finally {
@@ -39,6 +45,24 @@ const AccommodationDetail = () => {
       } catch (err) {
         setError(err.message || 'Failed to delete accommodation');
       }
+    }
+  }
+
+
+  const handleToggleSave = async () => {
+    if (!isAuthenticated) {
+      if (window.confirm('Bạn cần đăng nhập để lưu tin.')) {
+        navigate('/login');
+      }
+      return;
+    }
+
+    try {
+      await savedService.toggleSave(id);
+      setIsSaved(!isSaved);
+    } catch (err) {
+      console.error(err);
+      alert('Có lỗi xảy ra khi lưu tin.');
     }
   };
 
@@ -217,7 +241,21 @@ const AccommodationDetail = () => {
                     <span className="text-xl text-blue-600 font-extrabold" style={{ fontFamily: 'sans-serif' }}>Z</span>
                     <span className="text-sm">Chat Zalo</span>
                   </a>
+
                 </div>
+
+                <button
+                  onClick={handleToggleSave}
+                  className={`w-full mt-3 flex items-center justify-center gap-2 py-3 rounded-lg font-bold border transition-colors ${isSaved
+                    ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
+                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                    }`}
+                >
+                  {isSaved ? <FaHeart className="text-xl" /> : <FaRegHeart className="text-xl" />}
+                  <span>{isSaved ? 'Đã lưu tin' : 'Lưu tin này'}</span>
+                </button>
+
+
               </div>
             )}
           </div>
@@ -232,7 +270,7 @@ const AccommodationDetail = () => {
         </div>
 
       </div>
-    </div>
+    </div >
   );
 };
 

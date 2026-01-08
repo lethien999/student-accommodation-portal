@@ -39,6 +39,25 @@ const protect = catchAsync(async (req, res, next) => {
   }
 });
 
+// Optional authentication - populates req.user if valid token, otherwise continues as guest
+const authorizeOptional = catchAsync(async (req, res, next) => {
+  let token;
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) return next();
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findByPk(decoded.id, { include: Role });
+    next();
+  } catch (err) {
+    // If token invalid, continue as guest
+    next();
+  }
+});
+
 // Grant access to specific roles
 const authorize = (...roles) => {
   return (req, res, next) => {
@@ -63,5 +82,6 @@ module.exports = {
   authorize, // Export generic authorize
   admin,
   landlord,
-  landlordOrAdmin
+  landlordOrAdmin,
+  authorizeOptional
 };

@@ -5,7 +5,8 @@ const catchAsync = require('../utils/catchAsync');
 // @route   GET /api/accommodations
 // @access  Public
 const getAll = catchAsync(async (req, res) => {
-  const result = await accommodationService.findAll(req.query);
+  const userId = req.user ? req.user.id : null;
+  const result = await accommodationService.findAll(req.query, userId);
 
   res.json({
     success: true,
@@ -20,7 +21,8 @@ const getAll = catchAsync(async (req, res) => {
 // @route   GET /api/accommodations/:id
 // @access  Public
 const getById = catchAsync(async (req, res) => {
-  const accommodation = await accommodationService.findById(req.params.id);
+  const userId = req.user ? req.user.id : null;
+  const accommodation = await accommodationService.findById(req.params.id, userId);
 
   res.json({
     success: true,

@@ -13,16 +13,18 @@ class AccommodationService {
      * Get all accommodations with filtering, sorting, and pagination
      * @param {Object} query - Query parameters
      */
-    async findAll(query) {
+    async findAll(query, userId = null) {
         const {
-            search,
-            minPrice,
-            maxPrice,
-            status,
             page = 1,
             limit = 10,
-            sortBy = 'createdAt',
-            sortOrder = 'DESC'
+            search,
+            province,
+            district,
+            minPrice,
+            maxPrice,
+            type,
+            sort,
+            status
         } = query;
 
         const where = {};
@@ -81,7 +83,7 @@ class AccommodationService {
                     attributes: ['id', 'username', 'email', 'phone', 'avatar']
                 }
             ],
-            order: [[sortBy, sortOrder]],
+            order: [['createdAt', 'DESC']], // Assuming default sort if 'sort' is not handled yet
             limit: parseInt(limit),
             offset: offset,
             subQuery: false // Important for attributes include + limit
@@ -95,41 +97,52 @@ class AccommodationService {
         };
     }
 
-    /**
-     * Get accommodation by ID
-     * @param {Number} id 
-     */
-    async findById(id) {
+    async findById(id, userId = null) {
+        const attributeInclude = [
+            [
+                sequelize.literal(`(
+                    SELECT AVG(rating)
+                    FROM Reviews AS review
+                    WHERE
+                        review.accommodationId = Accommodation.id
+                )`),
+                'averageRating'
+            ],
+            [
+                sequelize.literal(`(
+                    SELECT COUNT(*)
+                    FROM Reviews AS review
+                    WHERE
+                        review.accommodationId = Accommodation.id
+                )`),
+                'reviewCount'
+            ]
+        ];
+
+        if (userId) {
+            attributeInclude.push([
+                sequelize.literal(`(
+                    SELECT COUNT(*)
+                    FROM SavedAccommodations AS saved
+                    WHERE
+                        saved.accommodationId = Accommodation.id
+                        AND saved.userId = ${userId}
+                ) > 0`),
+                'isSaved'
+            ]);
+        }
+
         const accommodation = await this.accommodationModel.findByPk(id, {
-            attributes: {
-                include: [
-                    [
-                        sequelize.literal(`(
-                            SELECT AVG(rating)
-                            FROM Reviews AS review
-                            WHERE
-                                review.accommodationId = Accommodation.id
-                        )`),
-                        'averageRating'
-                    ],
-                    [
-                        sequelize.literal(`(
-                            SELECT COUNT(*)
-                            FROM Reviews AS review
-                            WHERE
-                                review.accommodationId = Accommodation.id
-                        )`),
-                        'reviewCount'
-                    ]
-                ]
-            },
             include: [
                 {
                     model: User,
                     as: 'owner',
                     attributes: ['id', 'username', 'email', 'phone', 'avatar', 'fullName']
                 }
-            ]
+            ],
+            attributes: {
+                include: attributeInclude
+            }
         });
 
         if (!accommodation) {

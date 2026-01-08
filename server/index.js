@@ -11,6 +11,7 @@ const accommodationRoutes = require('./routes/accommodationRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const savedRoutes = require('./routes/savedRoutes');
 
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const bookingRoutes = require('./routes/bookingRoutes'); // Phase 3
@@ -55,7 +56,8 @@ app.use('/api/reviews', reviewRoutes);
 
 app.use('/api/upload', uploadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/bookings', bookingRoutes); // Booking Routes
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/favorites', savedRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
@@ -80,6 +82,7 @@ const startServer = async () => {
     await sequelize.sync({ alter: true }); // Use alter: true to update schema
     logger.info('All models were synchronized successfully.');
 
+    // Seed roles
     // Seed roles
     await seedRoles();
 

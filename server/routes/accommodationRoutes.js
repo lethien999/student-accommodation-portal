@@ -1,13 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const {
-  getAll,
-  getById,
-  create,
-  update,
-  remove
-} = require('../controllers/accommodationController');
-const { protect } = require('../middleware/auth');
+const accommodationController = require('../controllers/accommodationController');
+const { protect, authorize, landlordOrAdmin, authorizeOptional } = require('../middleware/auth');
 const { accommodationValidation } = require('../middleware/validator');
 
 /**
