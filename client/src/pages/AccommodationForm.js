@@ -29,7 +29,7 @@ const AccommodationForm = () => {
     if (isEditMode) {
       fetchAccommodation();
     }
-  }, [id]);
+  }, [id, isEditMode]);
 
   const fetchAccommodation = async () => {
     try {
@@ -162,7 +162,7 @@ const AccommodationForm = () => {
           {/* Basic Information */}
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-4">Thông tin cơ bản</h2>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

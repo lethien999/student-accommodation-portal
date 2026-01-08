@@ -15,7 +15,6 @@ const AccommodationDetail = () => {
   const { isAuthenticated, currentUser } = useAuth(); // Use Hook
   const [accommodation, setAccommodation] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [isOwner, setIsOwner] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -30,7 +29,7 @@ const AccommodationDetail = () => {
 
         setIsOwner(currentUser?.id === data.ownerId);
       } catch (err) {
-        setError(err.message || 'Failed to fetch accommodation');
+        console.error(err.message || 'Failed to fetch accommodation');
       } finally {
         setLoading(false);
       }
@@ -44,7 +43,7 @@ const AccommodationDetail = () => {
         await accommodationService.delete(id);
         navigate('/accommodations');
       } catch (err) {
-        setError(err.message || 'Failed to delete accommodation');
+        console.error(err.message || 'Failed to delete accommodation');
       }
     }
   }

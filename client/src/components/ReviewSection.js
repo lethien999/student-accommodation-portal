@@ -16,32 +16,32 @@ const ReviewSection = ({ accommodationId }) => {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
 
+    const calculateStats = (reviewList) => {
+        if (reviewList.length === 0) {
+            setStats({ average: 0, count: 0 });
+            return;
+        }
+        const total = reviewList.reduce((sum, r) => sum + r.rating, 0);
+        const average = (total / reviewList.length).toFixed(1);
+        setStats({ average: parseFloat(average), count: reviewList.length });
+    };
+
     useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                const res = await reviewService.getByAccommodation(accommodationId);
+                if (res.success) {
+                    setReviews(res.reviews);
+                    calculateStats(res.reviews);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchReviews();
     }, [accommodationId]);
-
-    const fetchReviews = async () => {
-        try {
-            const res = await reviewService.getByAccommodation(accommodationId);
-            if (res.success) {
-                setReviews(res.reviews);
-                calculateStats(res.reviews);
-            }
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const calculateStats = (reviewList) => {
-        if (!reviewList.length) return setStats({ average: 0, count: 0 });
-        const sum = reviewList.reduce((acc, curr) => acc + curr.rating, 0);
-        setStats({
-            average: (sum / reviewList.length).toFixed(1),
-            count: reviewList.length
-        });
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
