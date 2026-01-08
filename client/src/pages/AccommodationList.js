@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import accommodationService from '../services/accommodationService';
 import AccommodationCard from '../components/AccommodationCard';
 
@@ -24,6 +24,7 @@ const AccommodationList = () => {
 
   useEffect(() => {
     fetchAccommodations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const fetchAccommodations = async () => {
