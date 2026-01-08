@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import accommodationService from '../services/accommodationService';
-import authService from '../services/authService';
 import savedService from '../services/savedService';
 import { useAuth } from '../context/AuthContext';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
@@ -37,7 +36,7 @@ const AccommodationDetail = () => {
       }
     };
     fetchAccommodation();
-  }, [id]);
+  }, [id, currentUser]);
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this accommodation?')) {
@@ -205,7 +204,7 @@ const AccommodationDetail = () => {
             {/* Landlord Info */}
             <div className="flex items-center gap-4 mb-6 border-b pb-6">
               <div className="w-14 h-14 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow">
-                {accommodation.owner?.avatar ? <img src={accommodation.owner.avatar} className="w-full h-full object-cover" /> : <span className="flex w-full h-full items-center justify-center text-xl font-bold text-gray-500">{accommodation.owner?.username[0].toUpperCase()}</span>}
+                {accommodation.owner?.avatar ? <img src={accommodation.owner.avatar} alt={accommodation.owner?.fullName || accommodation.owner?.username} className="w-full h-full object-cover" /> : <span className="flex w-full h-full items-center justify-center text-xl font-bold text-gray-500">{accommodation.owner?.username[0].toUpperCase()}</span>}
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Chủ nhà</p>

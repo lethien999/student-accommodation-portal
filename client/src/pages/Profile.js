@@ -8,8 +8,6 @@ import bookingService from '../services/bookingService'; // Phase 3
 
 const Profile = () => {
   const { user, updateUser } = useAuth(); // Use user from context
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('profile');
 
   // Dashboard Data
@@ -43,7 +41,7 @@ const Profile = () => {
         setActiveTab('dashboard');
       }
     }
-  }, [user]); // Run when user context updates
+  }, [user, activeTab]); // Run when user context updates
 
   // Fetch Data based on Tab
   useEffect(() => {
