@@ -29,6 +29,7 @@ const AccommodationForm = () => {
     if (isEditMode) {
       fetchAccommodation();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isEditMode]);
 
   const fetchAccommodation = async () => {
@@ -267,7 +268,7 @@ const AccommodationForm = () => {
                     <div key={index} className="relative">
                       <img
                         src={url}
-                        alt={`Image ${index + 1}`}
+                        alt={`Accommodation ${index + 1}`}
                         className="w-full h-32 object-cover rounded-md"
                         onError={(e) => {
                           e.target.src = 'https://via.placeholder.com/300x200?text=Invalid+Image';
