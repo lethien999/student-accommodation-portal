@@ -37,6 +37,9 @@ const AccommodationPriceHistory = require('./AccommodationPriceHistory')(sequeli
 // Property model for multi-property management
 const Property = require('./Property')(sequelize, DataTypes);
 
+// RentBilling model for monthly billing
+const RentBilling = require('./RentBilling')(sequelize, DataTypes);
+
 // New models for notification and chatbot management
 const Notification = require('./Notification');
 const NotificationTemplate = require('./NotificationTemplate');
@@ -207,5 +210,6 @@ module.exports = {
   ChatbotTrainingData,
   RecommendationFeedback,
   NotificationSubscription,
-  Property
+  Property,
+  RentBilling
 }; 
