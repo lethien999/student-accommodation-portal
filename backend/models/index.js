@@ -34,6 +34,9 @@ const Amenity = require('./Amenity')(sequelize, DataTypes);
 const AccommodationAmenity = require('./AccommodationAmenity')(sequelize, DataTypes);
 const AccommodationPriceHistory = require('./AccommodationPriceHistory')(sequelize, DataTypes);
 
+// Property model for multi-property management
+const Property = require('./Property')(sequelize, DataTypes);
+
 // New models for notification and chatbot management
 const Notification = require('./Notification');
 const NotificationTemplate = require('./NotificationTemplate');
@@ -156,6 +159,12 @@ Accommodation.hasMany(AccommodationPriceHistory, { foreignKey: 'accommodationId'
 AccommodationPriceHistory.belongsTo(User, { foreignKey: 'changedBy', as: 'changedByUser' });
 User.hasMany(AccommodationPriceHistory, { foreignKey: 'changedBy', as: 'priceChanges' });
 
+// Property Associations
+Property.belongsTo(User, { foreignKey: 'landlordId', as: 'landlord' });
+User.hasMany(Property, { foreignKey: 'landlordId', as: 'properties' });
+Property.hasMany(Accommodation, { foreignKey: 'propertyId', as: 'accommodations' });
+Accommodation.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' });
+
 // Notification Associations
 Notification.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 User.hasMany(Notification, { foreignKey: 'createdBy', as: 'createdNotifications' });
@@ -197,5 +206,6 @@ module.exports = {
   NotificationTemplate,
   ChatbotTrainingData,
   RecommendationFeedback,
-  NotificationSubscription
+  NotificationSubscription,
+  Property
 }; 

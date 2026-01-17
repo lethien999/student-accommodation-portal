@@ -7,6 +7,7 @@ const accommodationRoutes = require('./routes/accommodationRoutes');
 const favoriteRoutes = require('./routes/favoriteRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const propertyRoutes = require('./routes/v1/propertyRoutes');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const { initCronJobs } = require('./services/cronService');
 
@@ -57,6 +58,7 @@ app.use('/api/accommodations', accommodationRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/v1/properties', propertyRoutes);
 
 // Error handling
 app.use(errorHandler);
@@ -64,7 +66,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  
+
   // Khởi tạo cron jobs sau khi server đã khởi động
   initCronJobs();
 }); 
