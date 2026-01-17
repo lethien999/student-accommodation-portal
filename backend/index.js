@@ -31,6 +31,10 @@ const { graphqlHTTP } = require('express-graphql');
 const schema = require('./graphql/schema');
 const adminRoutes = require('./routes/v1/adminRoutes');
 const reviewRoutes = require('./routes/v1/reviewRoutes');
+const propertyRoutes = require('./routes/v1/propertyRoutes');
+const billingRoutes = require('./routes/v1/billingRoutes');
+const zaloRoutes = require('./routes/v1/zaloRoutes');
+const revenueRoutes = require('./routes/v1/revenueRoutes');
 const session = require('express-session');
 // const Sentry = require('@sentry/node');
 // const { nodeProfilingIntegration } = require('@sentry/profiling-node');
@@ -130,6 +134,10 @@ app.use('/api/v1/price-history', priceHistoryRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/chatbot', chatbotRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/properties', propertyRoutes);
+app.use('/api/v1/billings', billingRoutes);
+app.use('/api/v1/zalo', zaloRoutes);
+app.use('/api/v1/revenue', revenueRoutes);
 
 // Swagger UI route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
@@ -186,7 +194,7 @@ const startServer = async () => {
     console.log('Connecting to database...');
     await sequelize.authenticate();
     console.log('✅ Database connection established successfully');
-    
+
     console.log('Synchronizing database...');
     await sequelize.sync();
     console.log('✅ Database synchronized successfully');
