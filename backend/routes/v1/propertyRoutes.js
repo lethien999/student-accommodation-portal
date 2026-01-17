@@ -8,13 +8,13 @@
 const express = require('express');
 const router = express.Router();
 const propertyController = require('../../controllers/propertyController');
-const { protect, authorize } = require('../../middleware/auth');
+const { auth, authorize } = require('../../middleware/auth');
 
 // All routes require authentication
-router.use(protect);
+router.use(auth);
 
 // Only landlords can access these routes
-router.use(authorize('landlord', 'admin'));
+router.use(authorize(['landlord', 'admin']));
 
 /**
  * @route GET /api/v1/properties

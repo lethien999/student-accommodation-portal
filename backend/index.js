@@ -196,8 +196,13 @@ const startServer = async () => {
     console.log('✅ Database connection established successfully');
 
     console.log('Synchronizing database...');
-    await sequelize.sync();
-    console.log('✅ Database synchronized successfully');
+    try {
+      await sequelize.sync();
+      console.log('✅ Database synchronized successfully');
+    } catch (syncError) {
+      console.warn('⚠️ Database sync warning (tables may already exist):', syncError.message);
+      console.log('Continuing server startup...');
+    }
 
     app.listen(PORT, () => {
       console.log('\n🚀 Server is ready!');
