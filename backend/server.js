@@ -10,6 +10,7 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const propertyRoutes = require('./routes/v1/propertyRoutes');
 const billingRoutes = require('./routes/v1/billingRoutes');
 const zaloRoutes = require('./routes/v1/zaloRoutes');
+const revenueRoutes = require('./routes/v1/revenueRoutes');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const { initCronJobs } = require('./services/cronService');
 
@@ -63,6 +64,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/v1/properties', propertyRoutes);
 app.use('/api/v1/billings', billingRoutes);
 app.use('/api/v1/zalo', zaloRoutes);
+app.use('/api/v1/revenue', revenueRoutes);
 
 // Error handling
 app.use(errorHandler);
